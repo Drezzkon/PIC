@@ -3,6 +3,7 @@ package org.petri;
 import java.awt.Color;
 import java.awt.Paint;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -121,6 +122,7 @@ public class CreatePetriTask extends AbstractTask {
 			petriNet.getDefaultNodeTable().getRow(cyTransitionArray[i].getSUID()).set("name", element.getAttribute("id"));
 			petriNet.getDefaultNodeTable().getRow(cyTransitionArray[i].getSUID()).set("amount", -1);
 			petriNet.getDefaultNodeTable().getRow(cyTransitionArray[i].getSUID()).set("type", "Transition");
+			petriNet.getDefaultNodeTable().getRow(cyTransitionArray[i].getSUID()).set("fired", 0);
 			NodeList children = element.getChildNodes();
 			LOGGER.info("Generating Edges for Transition");
 			
@@ -163,6 +165,7 @@ public class CreatePetriTask extends AbstractTask {
 				}
 			}
 		}
+		
 		netMgr.addNetwork(petriNet);
 		eventHelper.flushPayloadEvents();
 		CyNetworkView cnv = cnvf.createNetworkView(petriNet);
@@ -211,5 +214,41 @@ public class CreatePetriTask extends AbstractTask {
 		if (destroyNetwork) {
 			netMgr.destroyNetwork(petriNet);
 		}
+	}
+	public void fire(CyNetwork petriNet, CyNode[] cyTransitionArray){
+		ArrayList<CyNode> fireableTransitions = new ArrayList<CyNode>();
+		for (int i=0; i<cyTransitionArray.length; i++){
+			Iterable<CyEdge>incomingEdges = petriNet.getAdjacentEdgeIterable(cyTransitionArray[i], CyEdge.Type.INCOMING);
+			boolean fireable = true;
+			for (CyEdge incomingEdge: incomingEdges){
+				if (petriNet.getDefaultNodeTable().getRow(incomingEdge.getSource().getSUID()).get("amount", Integer.class) < petriNet.getDefaultNodeTable().getRow(incomingEdge.getSUID()).get("weight", Integer.class)){
+					fireable = false;
+				}
+			}
+			if (fireable) {
+				fireableTransitions.add(cyTransitionArray[i]);
+			}
+		}
+		for (int i = 0; i<fireableTransitions.size(); i++){
+			Iterable<CyEdge>incomingEdges = petriNet.getAdjacentEdgeIterable(fireableTransitions.get(i), CyEdge.Type.INCOMING);
+			for (CyEdge incomingEdge: incomingEdges){
+				Integer newAmount = petriNet.getDefaultNodeTable().getRow(incomingEdge.getSource().getSUID()).get("amount", Integer.class) - petriNet.getDefaultNodeTable().getRow(incomingEdge.getSUID()).get("weight", Integer.class);
+				petriNet.getDefaultNodeTable().getRow(incomingEdge.getSource().getSUID()).set("amount", newAmount);
+			}
+			Iterable<CyEdge>outgoingEdges = petriNet.getAdjacentEdgeIterable(fireableTransitions.get(i),  CyEdge.Type.OUTGOING);
+			for (CyEdge outgoingEdge: outgoingEdges){
+				Integer newAmount = petriNet.getDefaultNodeTable().getRow(outgoingEdge.getTarget().getSUID()).get("amount", Integer.class) + petriNet.getDefaultNodeTable().getRow(outgoingEdge.getSUID()).get("weight", Integer.class);
+				petriNet.getDefaultNodeTable().getRow(outgoingEdge.getTarget().getSUID()).set("amount", newAmount);
+			}
+		}
+		for (int i = 0; i<cyTransitionArray.length; i++){
+			if (fireableTransitions.contains(cyTransitionArray[i])){
+				petriNet.getDefaultNodeTable().getRow(cyTransitionArray[i].getSUID()).set("fired", 1);
+			}
+			else {
+				petriNet.getDefaultNodeTable().getRow(cyTransitionArray[i].getSUID()).set("fired", 0);
+			}
+		}	
+		
 	}
 }
