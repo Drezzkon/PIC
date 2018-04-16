@@ -1,8 +1,5 @@
 package org.petri;
 
-import java.awt.Button;
-import java.awt.Label;
-import java.awt.TextField;
 import java.util.Properties;
 
 import org.cytoscape.application.swing.CytoPanelComponent;
@@ -47,21 +44,6 @@ public class CyActivator extends AbstractCyActivator {
 				"(mapping.type=passthrough)");
 		//Just Petri Things
 		PetriPanel petriPanel = new PetriPanel();
-		
-		Label lb = new Label();
-		lb.setText("Control Panel for Petri Net App");
-		petriPanel.add(lb);
-		Label lb2 = new Label();
-		lb2.setText("How often do you want to fire?");
-		f1.add(lb2);
-		TextField tf = new TextField();
-		tf.setSize(300, 10);
-		f1.add(tf);
-		Button trans = new Button();
-		trans.setLabel("Fire Petri Net");
-		f1.add(trans);
-		petriPanel.add(f1);
-
 		
 		CreatePetriTaskFactory createPetriTaskFactory = new CreatePetriTaskFactory(cyNetworkManagerServiceRef,
 				cyNetworkNamingServiceRef,cyNetworkFactoryServiceRef,cyNetworkViewFactoryServiceRef,
