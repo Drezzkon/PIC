@@ -1,0 +1,22 @@
+Manifest-Version: 1.0
+Bundle-SymbolicName: org.petri
+Bundle-Name: Petri Net for Cytoscape
+Bundle-Version: 1.0
+Built-By: Szarash
+Bundle-ManifestVersion: 2
+Bnd-LastModified: 1523873459118
+Bundle-Activator: org.petri.CyActivator
+Import-Package: javax.swing,javax.xml.parsers,org.apache.log4j;version
+ ="[1.2,2)",org.cytoscape.application.swing,org.cytoscape.event;versio
+ n="[3.0,4)",org.cytoscape.model;version="[3.0,4)",org.cytoscape.servi
+ ce.util;version="[3.0,4)",org.cytoscape.session;version="[3.0,4)",org
+ .cytoscape.view.layout,org.cytoscape.view.model;version="[3.0,4)",org
+ .cytoscape.view.presentation.property;version="[3.0,4)",org.cytoscape
+ .view.presentation.property.values;version="[3.0,4)",org.cytoscape.vi
+ ew.vizmap;version="[3.0,4)",org.cytoscape.view.vizmap.mappings;versio
+ n="[3.0,4)",org.cytoscape.work;version="[3.0,4)",org.osgi.framework;v
+ ersion="[1.5,2)",org.w3c.dom
+Created-By: Apache Maven Bundle Plugin
+Tool: Bnd-1.15.0
+Build-Jdk: 1.8.0_162
+

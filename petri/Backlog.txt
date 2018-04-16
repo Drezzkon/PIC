@@ -1,0 +1,46 @@
+Milestone1:
+
+[x] Functionality
+
+[x] Color ranges for nodes based on attributes
+
+Scaling node size to label
+
+Firing the network and constructing its state after, including activity of transitions
+Reloading a network
+
+
+
+Milestone2:
+
+Reversing to a former state(?)(useful to show changes quick)
+
+Adding additional input formats
+
+
+
+
+Milestone3:
+
+Liveness of transitions and the hole net
+
+Reachability(graph?)
+
+Boundedness
+
+
+(hard to calculate probably, maybe impossible):
+
+Fastest ways to state/token in a certain place
+
+something with p- and t-invariants
+
+maximal common transition sets
+
+T-Clusters -> different cluster methods
+
+
+
+Misc.
+
+Logging
