@@ -2,6 +2,7 @@ package org.petri;
 
 import java.util.Properties;
 
+import org.cytoscape.app.CyAppAdapter;
 import org.cytoscape.application.swing.CytoPanelComponent;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyNetworkFactory;
@@ -14,7 +15,6 @@ import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.work.SynchronousTaskManager;
-import org.cytoscape.work.TaskFactory;
 import org.osgi.framework.BundleContext;
 
 
@@ -27,6 +27,7 @@ public class CyActivator extends AbstractCyActivator {
 
 	public void start(BundleContext bc) {
 
+		CyAppAdapter adapter = getService(bc, CyAppAdapter.class);
 		CyNetworkManager cyNetworkManagerServiceRef = getService(bc,CyNetworkManager.class);
 		CyNetworkNaming cyNetworkNamingServiceRef = getService(bc,CyNetworkNaming.class);
 		CyNetworkFactory cyNetworkFactoryServiceRef = getService(bc,CyNetworkFactory.class);
@@ -43,18 +44,12 @@ public class CyActivator extends AbstractCyActivator {
 		VisualMappingFunctionFactory visualMappingFunctionFactoryRefp = getService(bc, VisualMappingFunctionFactory.class,
 				"(mapping.type=passthrough)");
 		//Just Petri Things
-		PetriPanel petriPanel = new PetriPanel();
-		
-		CreatePetriTaskFactory createPetriTaskFactory = new CreatePetriTaskFactory(cyNetworkManagerServiceRef,
+
+		PetriPanel petriPanel = new PetriPanel(cyNetworkManagerServiceRef,
 				cyNetworkNamingServiceRef,cyNetworkFactoryServiceRef,cyNetworkViewFactoryServiceRef,
 				cyNetworkViewManagerServiceRef, eventHelperServiceRef,cyLayoutAlgorithmManagerRef,
 				synchronousTaskManagerRef, visualMappingManagerRef, visualMappingFunctionFactoryRefc,
-				visualMappingFunctionFactoryRefd, visualMappingFunctionFactoryRefp);
-
-		Properties petriTaskFactoryProps = new Properties();
-		petriTaskFactoryProps.setProperty("preferredMenu","Apps.Petri");
-		petriTaskFactoryProps.setProperty("title","Create Petri Net");
-		registerService(bc,createPetriTaskFactory,TaskFactory.class, petriTaskFactoryProps);
+				visualMappingFunctionFactoryRefd, visualMappingFunctionFactoryRefp, adapter);
 		registerService(bc, petriPanel, CytoPanelComponent.class, new Properties());
 	}
 }

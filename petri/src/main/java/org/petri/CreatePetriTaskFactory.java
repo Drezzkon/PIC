@@ -1,7 +1,7 @@
 package org.petri;
 
 import org.cytoscape.event.CyEventHelper;
-import org.cytoscape.model.CyNetworkFactory;
+import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.session.CyNetworkNaming;
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
@@ -15,7 +15,6 @@ import org.cytoscape.work.TaskIterator;
 
 public class CreatePetriTaskFactory extends AbstractTaskFactory{
 	private final CyNetworkManager netMgr;
-	private final CyNetworkFactory cnf;
 	private final CyNetworkNaming namingUtil; 
 	private final CyNetworkViewFactory cnvf;
 	private final CyNetworkViewManager cnvm;
@@ -26,15 +25,15 @@ public class CreatePetriTaskFactory extends AbstractTaskFactory{
 	private final VisualMappingFunctionFactory vmffc;
 	private final VisualMappingFunctionFactory vmffd;
 	private final VisualMappingFunctionFactory vmffp;
+	private final CyNetwork petriNet;
 	
 	public CreatePetriTaskFactory(final CyNetworkManager netMgr, final CyNetworkNaming namingUtil,
-			final CyNetworkFactory cnf, final CyNetworkViewFactory cnvf, final CyNetworkViewManager cnvm,
+			final CyNetworkViewFactory cnvf, final CyNetworkViewManager cnvm,
 			final CyEventHelper eventHelper, CyLayoutAlgorithmManager calm, SynchronousTaskManager<?> synctm,
 			VisualMappingManager vmm, VisualMappingFunctionFactory vmffc, VisualMappingFunctionFactory vmffd, 
-			VisualMappingFunctionFactory vmffp){
+			VisualMappingFunctionFactory vmffp, final CyNetwork petriNet){
 		this.netMgr = netMgr;
 		this.namingUtil = namingUtil;
-		this.cnf = cnf;
 		this.cnvf = cnvf;
 		this.cnvm = cnvm;
 		this.eventHelper = eventHelper;
@@ -44,11 +43,12 @@ public class CreatePetriTaskFactory extends AbstractTaskFactory{
 		this.vmffc = vmffc;
 		this.vmffd = vmffd;
 		this.vmffp = vmffp;
+		this.petriNet = petriNet;
 	}
 	
 	public TaskIterator createTaskIterator(){
-		return new TaskIterator(new CreatePetriTask(netMgr, namingUtil, cnf, cnvf, cnvm, eventHelper, calm,
-				synctm, vmm, vmffc, vmffd, vmffp));
+		return new TaskIterator(new CreatePetriTask(netMgr, namingUtil, cnvf, cnvm, eventHelper, calm,
+				synctm, vmm, vmffc, vmffd, vmffp, petriNet));
 	}
 
 }

@@ -16,6 +16,7 @@ Milestone2:
 Reversing to a former state(?)(useful to show changes quick)
 
 Adding additional input formats
+Saving petri net
 
 
 

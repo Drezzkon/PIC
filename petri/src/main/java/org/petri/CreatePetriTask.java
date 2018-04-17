@@ -3,7 +3,6 @@ package org.petri;
 import java.awt.Color;
 import java.awt.Paint;
 import java.io.File;
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -11,9 +10,9 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.apache.log4j.Logger;
+import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.session.CyNetworkNaming;
@@ -38,7 +37,6 @@ import org.cytoscape.work.SynchronousTaskManager;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
-import org.cytoscape.event.CyEventHelper;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -47,7 +45,6 @@ import org.w3c.dom.NodeList;
 public class CreatePetriTask extends AbstractTask {
 
 	private final CyNetworkManager netMgr;
-	private final CyNetworkFactory cnf;
 	private final CyNetworkNaming namingUtil;
 	private final CyNetworkViewFactory cnvf;
 	private final CyNetworkViewManager cnvm;
@@ -60,15 +57,15 @@ public class CreatePetriTask extends AbstractTask {
 	private final VisualMappingFunctionFactory vmffc;
 	private final VisualMappingFunctionFactory vmffd;
 	private final VisualMappingFunctionFactory vmffp;
+	private final CyNetwork petriNet;
 	private static final Logger LOGGER = Logger.getLogger(CreatePetriTask.class);
 	
 	public CreatePetriTask(final CyNetworkManager netMgr, final CyNetworkNaming namingUtil,
-			final CyNetworkFactory cnf, final CyNetworkViewFactory cnvf, final CyNetworkViewManager cnvm,
+			final CyNetworkViewFactory cnvf, final CyNetworkViewManager cnvm,
 			final CyEventHelper eventHelper, CyLayoutAlgorithmManager calm, SynchronousTaskManager<?> synctm,
 			VisualMappingManager vmm, VisualMappingFunctionFactory vmffc, VisualMappingFunctionFactory vmffd,
-			VisualMappingFunctionFactory vmffp){
+			VisualMappingFunctionFactory vmffp, CyNetwork petriNet){
 		this.netMgr = netMgr;
-		this.cnf = cnf;
 		this.namingUtil = namingUtil;
 		this.cnvf = cnvf;
 		this.cnvm = cnvm;
@@ -78,11 +75,13 @@ public class CreatePetriTask extends AbstractTask {
 		this.vmm = vmm;
 		this.vmffc = vmffc;
 		this.vmffd = vmffd;
-		this.vmffp = vmffp;		
+		this.vmffp = vmffp;
+		this.petriNet = petriNet;
 	}
+
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public void run(TaskMonitor monitor) throws Exception {
 		//Create Petri Net
-	    CyNetwork petriNet = cnf.createNetwork();
 		petriNet.getRow(petriNet).set(CyNetwork.NAME,
 			      namingUtil.getSuggestedNetworkTitle("Petri Net"));
 		//Reading from Document
@@ -96,6 +95,7 @@ public class CreatePetriTask extends AbstractTask {
 		petriNet.getDefaultNodeTable().createColumn("amount", Integer.class, false);
 		petriNet.getDefaultNodeTable().createColumn("initial amount", Integer.class, true);
 		petriNet.getDefaultNodeTable().createColumn("type", String.class, true);
+		petriNet.getDefaultNodeTable().createColumn("fired", Integer.class, false);
 		int maxAmount = 0;
 		for (int i = 0; i<listOfPlaces.getLength(); i++) {
 			cyPlaceArray[i] = petriNet.addNode();
@@ -188,10 +188,12 @@ public class CreatePetriTask extends AbstractTask {
 		nodeviews.addAll(placeviews);
 		cnvm.addNetworkView(cnv);
 		VisualStyle vs = vmm.getVisualStyle(cnv);
-		ContinuousMapping colorMap = (ContinuousMapping) vmffc.createVisualMappingFunction("amount", Integer.class,
-				BasicVisualLexicon.NODE_FILL_COLOR);
-		BoundaryRangeValues<Paint> brv1 = new BoundaryRangeValues<Paint>(new Color(255,255,255), new Color(255,191,191), new Color(255,127,127));
-		BoundaryRangeValues<Paint> brv2 = new BoundaryRangeValues<Paint>(new Color(255,127,127), new Color(255,63,63), new Color(255,0,0));
+		ContinuousMapping<Integer, Paint> colorMap = (ContinuousMapping<Integer, Paint>)
+				vmffc.createVisualMappingFunction("amount", Integer.class,BasicVisualLexicon.NODE_FILL_COLOR);
+		BoundaryRangeValues<Paint> brv1 = new BoundaryRangeValues<Paint>(new Color(255,255,255), 
+				new Color(255,191,191), new Color(255,127,127));
+		BoundaryRangeValues<Paint> brv2 = new BoundaryRangeValues<Paint>(new Color(255,127,127),
+				new Color(255,63,63), new Color(255,0,0));
 		colorMap.addPoint(1, brv1);
 		colorMap.addPoint(maxAmount-maxAmount/2, brv2);
 		vs.addVisualMappingFunction(colorMap);
@@ -201,7 +203,8 @@ public class CreatePetriTask extends AbstractTask {
 		shapeMap.putMapValue("Transition", NodeShapeVisualProperty.RECTANGLE);
 		shapeMap.putMapValue("Place", NodeShapeVisualProperty.TRIANGLE);
 		vs.addVisualMappingFunction(shapeMap);
-		PassthroughMapping nameMap = (PassthroughMapping) vmffp.createVisualMappingFunction("name", String.class, BasicVisualLexicon.NODE_LABEL);
+		PassthroughMapping<String, ?> nameMap = (PassthroughMapping<String, ?>)
+				vmffp.createVisualMappingFunction("name", String.class, BasicVisualLexicon.NODE_LABEL);
 		vs.addVisualMappingFunction(nameMap);
 		for (View<CyNode> v : transitionviews) {
 			v.setLockedValue(BasicVisualLexicon.NODE_FILL_COLOR, Color.WHITE);
@@ -214,41 +217,5 @@ public class CreatePetriTask extends AbstractTask {
 		if (destroyNetwork) {
 			netMgr.destroyNetwork(petriNet);
 		}
-	}
-	public void fire(CyNetwork petriNet, CyNode[] cyTransitionArray){
-		ArrayList<CyNode> fireableTransitions = new ArrayList<CyNode>();
-		for (int i=0; i<cyTransitionArray.length; i++){
-			Iterable<CyEdge>incomingEdges = petriNet.getAdjacentEdgeIterable(cyTransitionArray[i], CyEdge.Type.INCOMING);
-			boolean fireable = true;
-			for (CyEdge incomingEdge: incomingEdges){
-				if (petriNet.getDefaultNodeTable().getRow(incomingEdge.getSource().getSUID()).get("amount", Integer.class) < petriNet.getDefaultNodeTable().getRow(incomingEdge.getSUID()).get("weight", Integer.class)){
-					fireable = false;
-				}
-			}
-			if (fireable) {
-				fireableTransitions.add(cyTransitionArray[i]);
-			}
-		}
-		for (int i = 0; i<fireableTransitions.size(); i++){
-			Iterable<CyEdge>incomingEdges = petriNet.getAdjacentEdgeIterable(fireableTransitions.get(i), CyEdge.Type.INCOMING);
-			for (CyEdge incomingEdge: incomingEdges){
-				Integer newAmount = petriNet.getDefaultNodeTable().getRow(incomingEdge.getSource().getSUID()).get("amount", Integer.class) - petriNet.getDefaultNodeTable().getRow(incomingEdge.getSUID()).get("weight", Integer.class);
-				petriNet.getDefaultNodeTable().getRow(incomingEdge.getSource().getSUID()).set("amount", newAmount);
-			}
-			Iterable<CyEdge>outgoingEdges = petriNet.getAdjacentEdgeIterable(fireableTransitions.get(i),  CyEdge.Type.OUTGOING);
-			for (CyEdge outgoingEdge: outgoingEdges){
-				Integer newAmount = petriNet.getDefaultNodeTable().getRow(outgoingEdge.getTarget().getSUID()).get("amount", Integer.class) + petriNet.getDefaultNodeTable().getRow(outgoingEdge.getSUID()).get("weight", Integer.class);
-				petriNet.getDefaultNodeTable().getRow(outgoingEdge.getTarget().getSUID()).set("amount", newAmount);
-			}
-		}
-		for (int i = 0; i<cyTransitionArray.length; i++){
-			if (fireableTransitions.contains(cyTransitionArray[i])){
-				petriNet.getDefaultNodeTable().getRow(cyTransitionArray[i].getSUID()).set("fired", 1);
-			}
-			else {
-				petriNet.getDefaultNodeTable().getRow(cyTransitionArray[i].getSUID()).set("fired", 0);
-			}
-		}	
-		
 	}
 }
