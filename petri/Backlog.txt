@@ -4,10 +4,10 @@ Milestone1:
 
 [x] Color ranges for nodes based on attributes
 
-Scaling node size to label
-
-Firing the network and constructing its state after, including activity of transitions
+Scaling node size to label (?)
+[x]Firing the network and constructing its state after, including activity of transitions
 Reloading a network
+Firing several times
 
 
 
@@ -16,7 +16,7 @@ Milestone2:
 Reversing to a former state(?)(useful to show changes quick)
 
 Adding additional input formats
-Saving petri net
+Saving petri net (?)
 
 
 

@@ -22,6 +22,7 @@ import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.session.CyNetworkNaming;
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
+import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
@@ -82,6 +83,9 @@ public class PetriPanel extends JPanel implements CytoPanelComponent {
 		fireBut.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				fn.fire();
+				CyNetworkView [] cnv = new CyNetworkView[1];
+				cyNetworkViewManagerServiceRef.getNetworkViews(petriNet).toArray(cnv);
+				cnv[0].updateView();
 			}
 		});
 		but.add(fireBut);
