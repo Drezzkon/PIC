@@ -34,6 +34,9 @@ public class PetriPanel extends JPanel implements CytoPanelComponent {
 
 	private static final long serialVersionUID = -6054408975485644227L;
 	private JPanel jPanel;
+	private CyNetwork petriNet;
+	private FireNetwork fn;
+	private CreatePetriTaskFactory createPetriTaskFactory;
 
 	public PetriPanel(final CyNetworkManager cyNetworkManagerServiceRef,
 			final CyNetworkNaming cyNetworkNamingServiceRef,
@@ -49,13 +52,6 @@ public class PetriPanel extends JPanel implements CytoPanelComponent {
 			final VisualMappingFunctionFactory visualMappingFunctionFactoryRefp,
 			final CyAppAdapter adapter) {
 		super();
-		final CyNetwork petriNet = cyNetworkFactoryServiceRef.createNetwork();
-		final CreatePetriTaskFactory createPetriTaskFactory = new CreatePetriTaskFactory(cyNetworkManagerServiceRef,
-				cyNetworkNamingServiceRef,cyNetworkViewFactoryServiceRef,cyNetworkViewManagerServiceRef,
-				eventHelperServiceRef,cyLayoutAlgorithmManagerRef,synchronousTaskManagerRef, 
-				visualMappingManagerRef, visualMappingFunctionFactoryRefc,visualMappingFunctionFactoryRefd, 
-				visualMappingFunctionFactoryRefp, petriNet);
-		final FireNetwork fn = new FireNetwork(petriNet);
 		jPanel = new JPanel();
 		jPanel.setBackground(Color.WHITE);
 		jPanel.setLayout(new BorderLayout());
@@ -65,6 +61,17 @@ public class PetriPanel extends JPanel implements CytoPanelComponent {
 		Button loadBut = new Button("Load Petri Net");
 		loadBut.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
+				if (petriNet != null) {
+				cyNetworkManagerServiceRef.destroyNetwork(petriNet);
+				}
+				petriNet = cyNetworkFactoryServiceRef.createNetwork();
+				cyNetworkManagerServiceRef.addNetwork(petriNet);
+				createPetriTaskFactory = new CreatePetriTaskFactory(cyNetworkManagerServiceRef,
+						cyNetworkNamingServiceRef,cyNetworkViewFactoryServiceRef,cyNetworkViewManagerServiceRef,
+						eventHelperServiceRef,cyLayoutAlgorithmManagerRef,synchronousTaskManagerRef, 
+						visualMappingManagerRef, visualMappingFunctionFactoryRefc,visualMappingFunctionFactoryRefd, 
+						visualMappingFunctionFactoryRefp, petriNet);
+				fn = new FireNetwork(petriNet);
 				TaskIterator petri = createPetriTaskFactory.createTaskIterator();
 				adapter.getTaskManager().execute(petri);
 				SynchronousTaskManager<?> synTaskMan = adapter.getCyServiceRegistrar().getService(SynchronousTaskManager.class);
@@ -72,17 +79,27 @@ public class PetriPanel extends JPanel implements CytoPanelComponent {
 			}
 		});
 		top.add(loadBut);
-		top.add(new Label("Which Network do you want to fire?"));
-		top.add(new TextField());
+		Button resetBut = new Button("Reset Petri Net");
+		resetBut.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				fn.reset();
+			}
+		});
+		top.add(resetBut);
+		//top.add(new Label("Which Network do you want to fire?"));
+		//top.add(new TextField());
 		top.add(new Label("How often do you want to fire?"));
-		top.add(new TextField());
+		final TextField times = new TextField("1");
+		top.add(times);
 		jPanel.add(top, BorderLayout.PAGE_START);
 		JPanel but = new JPanel();
 		but.setLayout(new GridLayout(0,1));
 		Button fireBut = new Button("Fire Petri Net");
 		fireBut.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				fn.fire();
+				for (int i=0; i<Integer.parseInt(times.getText()); i++) {
+					fn.fire();
+				}
 				CyNetworkView [] cnv = new CyNetworkView[1];
 				cyNetworkViewManagerServiceRef.getNetworkViews(petriNet).toArray(cnv);
 				cnv[0].updateView();

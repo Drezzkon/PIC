@@ -68,4 +68,26 @@ public class FireNetwork {
 			}
 		}
 	}
+	
+	public void reset() {
+		int length = 0;
+		for (CyNode n : petriNet.getNodeList()) {
+			String ntype = (String) (petriNet.getDefaultNodeTable().getRow(n.getSUID()).get("type", String.class));
+			if (ntype.equals("Place")) {
+				length++;				
+			}
+		}
+		CyNode[] cyPlaceArray = new CyNode[length];
+		length = 0;
+		for (CyNode n : petriNet.getNodeList()) {
+			String ntype = (String) (petriNet.getDefaultNodeTable().getRow(n.getSUID()).get("type", String.class));
+			if (ntype.equals("Place")) {
+				cyPlaceArray[length] = n;
+				length++;
+			}
+		}
+		for (CyNode n : cyPlaceArray) {
+			petriNet.getDefaultNodeTable().getRow(n.getSUID()).set("amount", petriNet.getDefaultNodeTable().getRow(n.getSUID()).get("initial amount", Integer.class));
+		}
+	}
 }

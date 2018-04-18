@@ -165,8 +165,6 @@ public class CreatePetriTask extends AbstractTask {
 				}
 			}
 		}
-		
-		netMgr.addNetwork(petriNet);
 		eventHelper.flushPayloadEvents();
 		CyNetworkView cnv = cnvf.createNetworkView(petriNet);
 		Set <View<CyNode>> nodeviews = new HashSet<View<CyNode>>();
