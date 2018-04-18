@@ -120,7 +120,6 @@ public class CreatePetriTask extends AbstractTask {
 			cyTransitionArray[i] = petriNet.addNode();
 			Element element = (Element) listOfTransitions.item(i);
 			petriNet.getDefaultNodeTable().getRow(cyTransitionArray[i].getSUID()).set("name", element.getAttribute("id"));
-			petriNet.getDefaultNodeTable().getRow(cyTransitionArray[i].getSUID()).set("amount", -1);
 			petriNet.getDefaultNodeTable().getRow(cyTransitionArray[i].getSUID()).set("type", "Transition");
 			petriNet.getDefaultNodeTable().getRow(cyTransitionArray[i].getSUID()).set("fired", 0);
 			NodeList children = element.getChildNodes();
@@ -186,28 +185,41 @@ public class CreatePetriTask extends AbstractTask {
 		nodeviews.addAll(placeviews);
 		cnvm.addNetworkView(cnv);
 		VisualStyle vs = vmm.getVisualStyle(cnv);
-		ContinuousMapping<Integer, Paint> colorMap = (ContinuousMapping<Integer, Paint>)
+		ContinuousMapping<Integer, Paint> amountMap = (ContinuousMapping<Integer, Paint>)
 				vmffc.createVisualMappingFunction("amount", Integer.class,BasicVisualLexicon.NODE_FILL_COLOR);
 		BoundaryRangeValues<Paint> brv1 = new BoundaryRangeValues<Paint>(new Color(255,255,255), 
 				new Color(255,191,191), new Color(255,127,127));
 		BoundaryRangeValues<Paint> brv2 = new BoundaryRangeValues<Paint>(new Color(255,127,127),
 				new Color(255,63,63), new Color(255,0,0));
-		colorMap.addPoint(1, brv1);
-		colorMap.addPoint(maxAmount-maxAmount/2, brv2);
-		vs.addVisualMappingFunction(colorMap);
+		amountMap.addPoint(1, brv1);
+		amountMap.addPoint(maxAmount-maxAmount/2, brv2);
+		vs.addVisualMappingFunction(amountMap);
+		ContinuousMapping<Integer, Paint> firedMap = (ContinuousMapping<Integer, Paint>)
+				vmffc.createVisualMappingFunction("fired", Integer.class,BasicVisualLexicon.NODE_FILL_COLOR);
+		BoundaryRangeValues<Paint> brv3 = new BoundaryRangeValues<Paint>(new Color(255,255,255), 
+				new Color(191,255,191), new Color(127,255,127));
+		BoundaryRangeValues<Paint> brv4 = new BoundaryRangeValues<Paint>(new Color(127,255,127),
+				new Color(63,255,63), new Color(0,255,0));
+		firedMap.addPoint(0, brv3);
+		firedMap.addPoint(1, brv4);
+		vs.addVisualMappingFunction(firedMap);
 		vs.setDefaultValue(BasicVisualLexicon.NODE_BORDER_PAINT, Color.BLACK);
 		vs.setDefaultValue(BasicVisualLexicon.NODE_BORDER_WIDTH, 1.0);
 		DiscreteMapping shapeMap = (DiscreteMapping) vmffd.createVisualMappingFunction("type", String.class, BasicVisualLexicon.NODE_SHAPE);
 		shapeMap.putMapValue("Transition", NodeShapeVisualProperty.RECTANGLE);
-		shapeMap.putMapValue("Place", NodeShapeVisualProperty.TRIANGLE);
+		shapeMap.putMapValue("Place", NodeShapeVisualProperty.ELLIPSE);
 		vs.addVisualMappingFunction(shapeMap);
 		PassthroughMapping<String, ?> nameMap = (PassthroughMapping<String, ?>)
 				vmffp.createVisualMappingFunction("name", String.class, BasicVisualLexicon.NODE_LABEL);
 		vs.addVisualMappingFunction(nameMap);
 		for (View<CyNode> v : transitionviews) {
+			v.setLockedValue(BasicVisualLexicon.NODE_WIDTH, 35.0);
 			v.setLockedValue(BasicVisualLexicon.NODE_FILL_COLOR, Color.WHITE);
 		}
-		CyLayoutAlgorithm def = calm.getDefaultLayout();
+		for (View<CyNode> v : placeviews) {
+		v.setLockedValue(BasicVisualLexicon.NODE_WIDTH, 35.0);
+		}
+		CyLayoutAlgorithm def = calm.getLayout("force-directed");
 		TaskIterator itr = def.createTaskIterator(cnv, def.getDefaultLayoutContext(), nodeviews, null);
 		synctm.execute(itr);
 		cnv.updateView();

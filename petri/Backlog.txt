@@ -3,11 +3,11 @@ Milestone1:
 [x] Functionality
 
 [x] Color ranges for places based on token amount
-Color ranges for transitions based on activity
-Scaling node size to label (?)
+Color ranges for transitions based on activity-----
+[x] Correcting Node Shapes
 [x] Firing the network and constructing its state after, including activity of transitions
 [x] Reloading a network
-Firing several times
+[x] Firing several times
 
 
 

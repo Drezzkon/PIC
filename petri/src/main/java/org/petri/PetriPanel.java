@@ -20,6 +20,7 @@ import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyNetworkManager;
+import org.cytoscape.model.CyNode;
 import org.cytoscape.session.CyNetworkNaming;
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
 import org.cytoscape.view.model.CyNetworkView;
@@ -35,7 +36,7 @@ public class PetriPanel extends JPanel implements CytoPanelComponent {
 	private static final long serialVersionUID = -6054408975485644227L;
 	private JPanel jPanel;
 	private CyNetwork petriNet;
-	private FireNetwork fn;
+	private PetriUtils petriUtils;
 	private CreatePetriTaskFactory createPetriTaskFactory;
 
 	public PetriPanel(final CyNetworkManager cyNetworkManagerServiceRef,
@@ -71,7 +72,7 @@ public class PetriPanel extends JPanel implements CytoPanelComponent {
 						eventHelperServiceRef,cyLayoutAlgorithmManagerRef,synchronousTaskManagerRef, 
 						visualMappingManagerRef, visualMappingFunctionFactoryRefc,visualMappingFunctionFactoryRefd, 
 						visualMappingFunctionFactoryRefp, petriNet);
-				fn = new FireNetwork(petriNet);
+				petriUtils = new PetriUtils(petriNet,visualMappingFunctionFactoryRefc,visualMappingManagerRef);
 				TaskIterator petri = createPetriTaskFactory.createTaskIterator();
 				adapter.getTaskManager().execute(petri);
 				SynchronousTaskManager<?> synTaskMan = adapter.getCyServiceRegistrar().getService(SynchronousTaskManager.class);
@@ -82,12 +83,10 @@ public class PetriPanel extends JPanel implements CytoPanelComponent {
 		Button resetBut = new Button("Reset Petri Net");
 		resetBut.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				fn.reset();
+				petriUtils.reset();
 			}
 		});
 		top.add(resetBut);
-		//top.add(new Label("Which Network do you want to fire?"));
-		//top.add(new TextField());
 		top.add(new Label("How often do you want to fire?"));
 		final TextField times = new TextField("1");
 		top.add(times);
@@ -97,11 +96,31 @@ public class PetriPanel extends JPanel implements CytoPanelComponent {
 		Button fireBut = new Button("Fire Petri Net");
 		fireBut.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
+				int length = 0;
+				for (CyNode n : petriNet.getNodeList()) {
+					String ntype = (String) (petriNet.getDefaultNodeTable().getRow(n.getSUID()).get("type", String.class));
+					if (ntype.equals("Transition")) {
+						length++;				
+					}
+				}
+				CyNode[] cyTransitionArray = new CyNode[length];
+				length = 0;
+				for (CyNode n : petriNet.getNodeList()) {
+					String ntype = (String) (petriNet.getDefaultNodeTable().getRow(n.getSUID()).get("type", String.class));
+					if (ntype.equals("Transition")) {
+						cyTransitionArray[length] = n;
+						length++;
+					}
+				}
+				for (CyNode n : cyTransitionArray) {
+					petriNet.getDefaultNodeTable().getRow(n.getSUID()).set("fired", 0);
+				}
 				for (int i=0; i<Integer.parseInt(times.getText()); i++) {
-					fn.fire();
+					petriUtils.fire(cyTransitionArray);
 				}
 				CyNetworkView [] cnv = new CyNetworkView[1];
 				cyNetworkViewManagerServiceRef.getNetworkViews(petriNet).toArray(cnv);
+				//fn.mapFired(Integer.parseInt(times.getText()), cnv[0]);
 				cnv[0].updateView();
 			}
 		});
