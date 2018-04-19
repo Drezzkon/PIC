@@ -22,7 +22,6 @@ public class CreatePetriTaskFactory extends AbstractTaskFactory{
 	private final CyLayoutAlgorithmManager calm;
 	private final SynchronousTaskManager<?> synctm;
 	private final VisualMappingManager vmm;
-	private final VisualMappingFunctionFactory vmffc;
 	private final VisualMappingFunctionFactory vmffd;
 	private final VisualMappingFunctionFactory vmffp;
 	private final CyNetwork petriNet;
@@ -30,7 +29,7 @@ public class CreatePetriTaskFactory extends AbstractTaskFactory{
 	public CreatePetriTaskFactory(final CyNetworkManager netMgr, final CyNetworkNaming namingUtil,
 			final CyNetworkViewFactory cnvf, final CyNetworkViewManager cnvm,
 			final CyEventHelper eventHelper, CyLayoutAlgorithmManager calm, SynchronousTaskManager<?> synctm,
-			VisualMappingManager vmm, VisualMappingFunctionFactory vmffc, VisualMappingFunctionFactory vmffd, 
+			VisualMappingManager vmm, VisualMappingFunctionFactory vmffd, 
 			VisualMappingFunctionFactory vmffp, final CyNetwork petriNet){
 		this.netMgr = netMgr;
 		this.namingUtil = namingUtil;
@@ -40,7 +39,6 @@ public class CreatePetriTaskFactory extends AbstractTaskFactory{
 		this.calm = calm;
 		this.synctm = synctm;
 		this.vmm = vmm;
-		this.vmffc = vmffc;
 		this.vmffd = vmffd;
 		this.vmffp = vmffp;
 		this.petriNet = petriNet;
@@ -48,7 +46,7 @@ public class CreatePetriTaskFactory extends AbstractTaskFactory{
 	
 	public TaskIterator createTaskIterator(){
 		return new TaskIterator(new CreatePetriTask(netMgr, namingUtil, cnvf, cnvm, eventHelper, calm,
-				synctm, vmm, vmffc, vmffd, vmffp, petriNet));
+				synctm, vmm, vmffd, vmffp, petriNet));
 	}
 
 }

@@ -1,7 +1,6 @@
 package org.petri;
 
 import java.awt.Color;
-import java.awt.Paint;
 import java.io.File;
 import java.util.HashSet;
 import java.util.Set;
@@ -28,8 +27,6 @@ import org.cytoscape.view.presentation.property.NodeShapeVisualProperty;
 import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyle;
-import org.cytoscape.view.vizmap.mappings.BoundaryRangeValues;
-import org.cytoscape.view.vizmap.mappings.ContinuousMapping;
 import org.cytoscape.view.vizmap.mappings.DiscreteMapping;
 import org.cytoscape.view.vizmap.mappings.PassthroughMapping;
 import org.cytoscape.work.AbstractTask;
@@ -54,7 +51,6 @@ public class CreatePetriTask extends AbstractTask {
 	private final CyLayoutAlgorithmManager calm ;
 	private final SynchronousTaskManager<?> synctm;
 	private final VisualMappingManager vmm;
-	private final VisualMappingFunctionFactory vmffc;
 	private final VisualMappingFunctionFactory vmffd;
 	private final VisualMappingFunctionFactory vmffp;
 	private final CyNetwork petriNet;
@@ -63,7 +59,7 @@ public class CreatePetriTask extends AbstractTask {
 	public CreatePetriTask(final CyNetworkManager netMgr, final CyNetworkNaming namingUtil,
 			final CyNetworkViewFactory cnvf, final CyNetworkViewManager cnvm,
 			final CyEventHelper eventHelper, CyLayoutAlgorithmManager calm, SynchronousTaskManager<?> synctm,
-			VisualMappingManager vmm, VisualMappingFunctionFactory vmffc, VisualMappingFunctionFactory vmffd,
+			VisualMappingManager vmm, VisualMappingFunctionFactory vmffd,
 			VisualMappingFunctionFactory vmffp, CyNetwork petriNet){
 		this.netMgr = netMgr;
 		this.namingUtil = namingUtil;
@@ -73,7 +69,6 @@ public class CreatePetriTask extends AbstractTask {
 		this.calm = calm;
 		this.synctm = synctm;
 		this.vmm = vmm;
-		this.vmffc = vmffc;
 		this.vmffd = vmffd;
 		this.vmffp = vmffp;
 		this.petriNet = petriNet;
@@ -92,18 +87,22 @@ public class CreatePetriTask extends AbstractTask {
 		//Generating Nodes for Places
 		NodeList listOfPlaces = doc.getElementsByTagName("species");
 		CyNode [] cyPlaceArray = new CyNode[listOfPlaces.getLength()];
-		petriNet.getDefaultNodeTable().createColumn("amount", Integer.class, false);
-		petriNet.getDefaultNodeTable().createColumn("initial amount", Integer.class, true);
+		petriNet.getDefaultNodeTable().createColumn("id", String.class, true);
+		petriNet.getDefaultNodeTable().createColumn("tokens", Integer.class, false);
+		petriNet.getDefaultNodeTable().createColumn("initial tokens", Integer.class, true);
 		petriNet.getDefaultNodeTable().createColumn("type", String.class, true);
 		petriNet.getDefaultNodeTable().createColumn("fired", Integer.class, false);
 		int maxAmount = 0;
 		for (int i = 0; i<listOfPlaces.getLength(); i++) {
 			cyPlaceArray[i] = petriNet.addNode();
 			Element element = (Element) listOfPlaces.item(i);
-			petriNet.getDefaultNodeTable().getRow(cyPlaceArray[i].getSUID()).set("name", element.getAttribute("id"));
-			petriNet.getDefaultNodeTable().getRow(cyPlaceArray[i].getSUID()).set("amount", Integer.parseInt(element.getAttribute("initialAmount")));
-			petriNet.getDefaultNodeTable().getRow(cyPlaceArray[i].getSUID()).set("initial amount", Integer.parseInt(element.getAttribute("initialAmount")));
+			petriNet.getDefaultNodeTable().getRow(cyPlaceArray[i].getSUID()).set("id", element.getAttribute("id"));
+			petriNet.getDefaultNodeTable().getRow(cyPlaceArray[i].getSUID()).set("tokens", Integer.parseInt(element.getAttribute("initialAmount")));
+			petriNet.getDefaultNodeTable().getRow(cyPlaceArray[i].getSUID()).set("initial tokens", Integer.parseInt(element.getAttribute("initialAmount")));
 			petriNet.getDefaultNodeTable().getRow(cyPlaceArray[i].getSUID()).set("type", "Place");
+			if (element.getAttribute("name") != null) {
+				petriNet.getDefaultNodeTable().getRow(cyPlaceArray[i].getSUID()).set("name", element.getAttribute("name"));
+			}
 			if (Integer.parseInt(element.getAttribute("initialAmount"))> maxAmount) {
 				maxAmount = Integer.parseInt(element.getAttribute("initialAmount"));
 			}
@@ -119,9 +118,13 @@ public class CreatePetriTask extends AbstractTask {
 		for (int i = 0; i<listOfTransitions.getLength(); i++) {
 			cyTransitionArray[i] = petriNet.addNode();
 			Element element = (Element) listOfTransitions.item(i);
-			petriNet.getDefaultNodeTable().getRow(cyTransitionArray[i].getSUID()).set("name", element.getAttribute("id"));
+			String id =  element.getAttribute("id");
+			petriNet.getDefaultNodeTable().getRow(cyTransitionArray[i].getSUID()).set("id", id);
 			petriNet.getDefaultNodeTable().getRow(cyTransitionArray[i].getSUID()).set("type", "Transition");
 			petriNet.getDefaultNodeTable().getRow(cyTransitionArray[i].getSUID()).set("fired", 0);
+			if (element.getAttribute("name") != null) {
+				petriNet.getDefaultNodeTable().getRow(cyTransitionArray[i].getSUID()).set("name", element.getAttribute("name"));
+			}
 			NodeList children = element.getChildNodes();
 			LOGGER.info("Generating Edges for Transition");
 			
@@ -135,9 +138,10 @@ public class CreatePetriTask extends AbstractTask {
 						if (reactants.item(reactIndex).getNodeType() == Node.ELEMENT_NODE) {
 							Element reactant = (Element) reactants.item(reactIndex);
 							for (int placeIndex = 0; placeIndex<listOfPlaces.getLength(); placeIndex++) {
-								if (petriNet.getDefaultNodeTable().getRow(cyPlaceArray[placeIndex].getSUID()).get("name", String.class).equals(reactant.getAttribute("species"))) {
+								if (petriNet.getDefaultNodeTable().getRow(cyPlaceArray[placeIndex].getSUID()).get("id", String.class).equals(reactant.getAttribute("species"))) {
 									cyEdgeArray[numOfEdges] = petriNet.addEdge(cyPlaceArray[placeIndex], cyTransitionArray[i], true);
 									petriNet.getDefaultEdgeTable().getRow(cyEdgeArray[numOfEdges].getSUID()).set("weight", Integer.parseInt(reactant.getAttribute("stoichiometry")));
+									petriNet.getDefaultEdgeTable().getRow(cyEdgeArray[numOfEdges].getSUID()).set("name", reactant.getAttribute("species")+"->"+id);
 									numOfEdges++;
 									break;
 								}
@@ -152,9 +156,10 @@ public class CreatePetriTask extends AbstractTask {
 						if (products.item(prodIndex).getNodeType() == Node.ELEMENT_NODE) {
 							Element product = (Element) products.item(prodIndex);
 							for (int placeIndex = 0; placeIndex<listOfPlaces.getLength(); placeIndex++) {
-								if (petriNet.getDefaultNodeTable().getRow(cyPlaceArray[placeIndex].getSUID()).get("name", String.class).equals(product.getAttribute("species"))) {
+								if (petriNet.getDefaultNodeTable().getRow(cyPlaceArray[placeIndex].getSUID()).get("id", String.class).equals(product.getAttribute("species"))) {
 									cyEdgeArray[numOfEdges] = petriNet.addEdge(cyTransitionArray[i], cyPlaceArray[placeIndex], true);
 									petriNet.getDefaultEdgeTable().getRow(cyEdgeArray[numOfEdges].getSUID()).set("weight", Integer.parseInt(product.getAttribute("stoichiometry")));
+									petriNet.getDefaultEdgeTable().getRow(cyEdgeArray[numOfEdges].getSUID()).set("name", id+"->"+product.getAttribute("species"));
 									numOfEdges++;
 									break;
 								}
@@ -185,24 +190,6 @@ public class CreatePetriTask extends AbstractTask {
 		nodeviews.addAll(placeviews);
 		cnvm.addNetworkView(cnv);
 		VisualStyle vs = vmm.getVisualStyle(cnv);
-		ContinuousMapping<Integer, Paint> amountMap = (ContinuousMapping<Integer, Paint>)
-				vmffc.createVisualMappingFunction("amount", Integer.class,BasicVisualLexicon.NODE_FILL_COLOR);
-		BoundaryRangeValues<Paint> brv1 = new BoundaryRangeValues<Paint>(new Color(255,255,255), 
-				new Color(255,191,191), new Color(255,127,127));
-		BoundaryRangeValues<Paint> brv2 = new BoundaryRangeValues<Paint>(new Color(255,127,127),
-				new Color(255,63,63), new Color(255,0,0));
-		amountMap.addPoint(1, brv1);
-		amountMap.addPoint(maxAmount-maxAmount/2, brv2);
-		vs.addVisualMappingFunction(amountMap);
-		ContinuousMapping<Integer, Paint> firedMap = (ContinuousMapping<Integer, Paint>)
-				vmffc.createVisualMappingFunction("fired", Integer.class,BasicVisualLexicon.NODE_FILL_COLOR);
-		BoundaryRangeValues<Paint> brv3 = new BoundaryRangeValues<Paint>(new Color(255,255,255), 
-				new Color(191,255,191), new Color(127,255,127));
-		BoundaryRangeValues<Paint> brv4 = new BoundaryRangeValues<Paint>(new Color(127,255,127),
-				new Color(63,255,63), new Color(0,255,0));
-		firedMap.addPoint(0, brv3);
-		firedMap.addPoint(1, brv4);
-		vs.addVisualMappingFunction(firedMap);
 		vs.setDefaultValue(BasicVisualLexicon.NODE_BORDER_PAINT, Color.BLACK);
 		vs.setDefaultValue(BasicVisualLexicon.NODE_BORDER_WIDTH, 1.0);
 		DiscreteMapping shapeMap = (DiscreteMapping) vmffd.createVisualMappingFunction("type", String.class, BasicVisualLexicon.NODE_SHAPE);
@@ -210,7 +197,7 @@ public class CreatePetriTask extends AbstractTask {
 		shapeMap.putMapValue("Place", NodeShapeVisualProperty.ELLIPSE);
 		vs.addVisualMappingFunction(shapeMap);
 		PassthroughMapping<String, ?> nameMap = (PassthroughMapping<String, ?>)
-				vmffp.createVisualMappingFunction("name", String.class, BasicVisualLexicon.NODE_LABEL);
+				vmffp.createVisualMappingFunction("id", String.class, BasicVisualLexicon.NODE_LABEL);
 		vs.addVisualMappingFunction(nameMap);
 		for (View<CyNode> v : transitionviews) {
 			v.setLockedValue(BasicVisualLexicon.NODE_WIDTH, 35.0);
@@ -219,7 +206,7 @@ public class CreatePetriTask extends AbstractTask {
 		for (View<CyNode> v : placeviews) {
 		v.setLockedValue(BasicVisualLexicon.NODE_WIDTH, 35.0);
 		}
-		CyLayoutAlgorithm def = calm.getLayout("force-directed");
+		CyLayoutAlgorithm def = calm.getDefaultLayout();
 		TaskIterator itr = def.createTaskIterator(cnv, def.getDefaultLayoutContext(), nodeviews, null);
 		synctm.execute(itr);
 		cnv.updateView();

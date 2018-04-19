@@ -37,8 +37,6 @@ public class CyActivator extends AbstractCyActivator {
 		CyLayoutAlgorithmManager cyLayoutAlgorithmManagerRef = getService(bc, CyLayoutAlgorithmManager.class);
 		SynchronousTaskManager<?> synchronousTaskManagerRef = getService(bc, SynchronousTaskManager.class);
 		VisualMappingManager visualMappingManagerRef = getService(bc, VisualMappingManager.class);
-		VisualMappingFunctionFactory visualMappingFunctionFactoryRefc = getService(bc, VisualMappingFunctionFactory.class,
-				"(mapping.type=continuous)");
 		VisualMappingFunctionFactory visualMappingFunctionFactoryRefd = getService(bc, VisualMappingFunctionFactory.class,
 				"(mapping.type=discrete)");
 		VisualMappingFunctionFactory visualMappingFunctionFactoryRefp = getService(bc, VisualMappingFunctionFactory.class,
@@ -48,7 +46,7 @@ public class CyActivator extends AbstractCyActivator {
 		PetriPanel petriPanel = new PetriPanel(cyNetworkManagerServiceRef,
 				cyNetworkNamingServiceRef,cyNetworkFactoryServiceRef,cyNetworkViewFactoryServiceRef,
 				cyNetworkViewManagerServiceRef, eventHelperServiceRef,cyLayoutAlgorithmManagerRef,
-				synchronousTaskManagerRef, visualMappingManagerRef, visualMappingFunctionFactoryRefc,
+				synchronousTaskManagerRef, visualMappingManagerRef,
 				visualMappingFunctionFactoryRefd, visualMappingFunctionFactoryRefp, adapter);
 		registerService(bc, petriPanel, CytoPanelComponent.class, new Properties());
 	}

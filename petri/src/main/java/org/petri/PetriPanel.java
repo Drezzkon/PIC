@@ -48,7 +48,6 @@ public class PetriPanel extends JPanel implements CytoPanelComponent {
 			final CyLayoutAlgorithmManager cyLayoutAlgorithmManagerRef,
 			final SynchronousTaskManager<?> synchronousTaskManagerRef,
 			final VisualMappingManager visualMappingManagerRef,
-			final VisualMappingFunctionFactory visualMappingFunctionFactoryRefc,
 			final VisualMappingFunctionFactory visualMappingFunctionFactoryRefd,
 			final VisualMappingFunctionFactory visualMappingFunctionFactoryRefp,
 			final CyAppAdapter adapter) {
@@ -70,9 +69,9 @@ public class PetriPanel extends JPanel implements CytoPanelComponent {
 				createPetriTaskFactory = new CreatePetriTaskFactory(cyNetworkManagerServiceRef,
 						cyNetworkNamingServiceRef,cyNetworkViewFactoryServiceRef,cyNetworkViewManagerServiceRef,
 						eventHelperServiceRef,cyLayoutAlgorithmManagerRef,synchronousTaskManagerRef, 
-						visualMappingManagerRef, visualMappingFunctionFactoryRefc,visualMappingFunctionFactoryRefd, 
+						visualMappingManagerRef,visualMappingFunctionFactoryRefd, 
 						visualMappingFunctionFactoryRefp, petriNet);
-				petriUtils = new PetriUtils(petriNet,visualMappingFunctionFactoryRefc,visualMappingManagerRef);
+				petriUtils = new PetriUtils(petriNet);
 				TaskIterator petri = createPetriTaskFactory.createTaskIterator();
 				adapter.getTaskManager().execute(petri);
 				SynchronousTaskManager<?> synTaskMan = adapter.getCyServiceRegistrar().getService(SynchronousTaskManager.class);
