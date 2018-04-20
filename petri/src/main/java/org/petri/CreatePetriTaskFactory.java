@@ -11,7 +11,6 @@ import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.work.AbstractTaskFactory;
-import org.cytoscape.work.SynchronousTaskManager;
 import org.cytoscape.work.TaskIterator;
 
 public class CreatePetriTaskFactory extends AbstractTaskFactory{
@@ -24,7 +23,6 @@ public class CreatePetriTaskFactory extends AbstractTaskFactory{
 	private final CyAppAdapter adapter;
 	private final VisualMappingManager vmm;
 	private final VisualMappingFunctionFactory vmffd;
-	private final VisualMappingFunctionFactory vmffp;
 	private final CyNetwork petriNet;
 	
 	public CreatePetriTaskFactory(final CyNetworkManager netMgr, final CyNetworkNaming namingUtil,
@@ -41,13 +39,12 @@ public class CreatePetriTaskFactory extends AbstractTaskFactory{
 		this.adapter = adapter;
 		this.vmm = vmm;
 		this.vmffd = vmffd;
-		this.vmffp = vmffp;
 		this.petriNet = petriNet;
 	}
 	
 	public TaskIterator createTaskIterator(){
 		return new TaskIterator(new CreatePetriTask(netMgr, namingUtil, cnvf, cnvm, eventHelper, calm,
-				adapter, vmm, vmffd, vmffp, petriNet));
+				adapter, vmm, vmffd, petriNet));
 	}
 
 }

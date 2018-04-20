@@ -9,10 +9,6 @@ import java.awt.Label;
 import java.awt.TextField;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
-
 import javax.swing.Icon;
 import javax.swing.JPanel;
 
@@ -25,15 +21,11 @@ import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.session.CyNetworkNaming;
-import org.cytoscape.view.layout.CyLayoutAlgorithm;
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
-import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.CyNetworkViewManager;
-import org.cytoscape.view.model.View;
 import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
 import org.cytoscape.view.vizmap.VisualMappingManager;
-import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.work.SynchronousTaskManager;
 import org.cytoscape.work.TaskIterator;
 
@@ -77,8 +69,7 @@ public class PetriPanel extends JPanel implements CytoPanelComponent {
 						eventHelperServiceRef,cyLayoutAlgorithmManagerRef, adapter, 
 						visualMappingManagerRef,visualMappingFunctionFactoryRefd, 
 						visualMappingFunctionFactoryRefp, petriNet);
-				petriUtils = new PetriUtils(petriNet, visualMappingManagerRef, visualMappingFunctionFactoryRefd,
-						cyLayoutAlgorithmManagerRef, adapter, cyNetworkViewFactoryServiceRef, cyNetworkViewManagerServiceRef);
+				petriUtils = new PetriUtils(petriNet, cyNetworkViewManagerServiceRef);
 				TaskIterator petri = createPetriTaskFactory.createTaskIterator();
 				adapter.getTaskManager().execute(petri);
 				SynchronousTaskManager<?> synTaskMan = adapter.getCyServiceRegistrar().getService(SynchronousTaskManager.class);
