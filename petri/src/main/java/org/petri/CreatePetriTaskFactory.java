@@ -1,5 +1,6 @@
 package org.petri;
 
+import org.cytoscape.app.CyAppAdapter;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
@@ -20,7 +21,7 @@ public class CreatePetriTaskFactory extends AbstractTaskFactory{
 	private final CyNetworkViewManager cnvm;
 	private final CyEventHelper eventHelper;
 	private final CyLayoutAlgorithmManager calm;
-	private final SynchronousTaskManager<?> synctm;
+	private final CyAppAdapter adapter;
 	private final VisualMappingManager vmm;
 	private final VisualMappingFunctionFactory vmffd;
 	private final VisualMappingFunctionFactory vmffp;
@@ -28,7 +29,7 @@ public class CreatePetriTaskFactory extends AbstractTaskFactory{
 	
 	public CreatePetriTaskFactory(final CyNetworkManager netMgr, final CyNetworkNaming namingUtil,
 			final CyNetworkViewFactory cnvf, final CyNetworkViewManager cnvm,
-			final CyEventHelper eventHelper, CyLayoutAlgorithmManager calm, SynchronousTaskManager<?> synctm,
+			final CyEventHelper eventHelper, CyLayoutAlgorithmManager calm, CyAppAdapter adapter,
 			VisualMappingManager vmm, VisualMappingFunctionFactory vmffd, 
 			VisualMappingFunctionFactory vmffp, final CyNetwork petriNet){
 		this.netMgr = netMgr;
@@ -37,7 +38,7 @@ public class CreatePetriTaskFactory extends AbstractTaskFactory{
 		this.cnvm = cnvm;
 		this.eventHelper = eventHelper;
 		this.calm = calm;
-		this.synctm = synctm;
+		this.adapter = adapter;
 		this.vmm = vmm;
 		this.vmffd = vmffd;
 		this.vmffp = vmffp;
@@ -46,7 +47,7 @@ public class CreatePetriTaskFactory extends AbstractTaskFactory{
 	
 	public TaskIterator createTaskIterator(){
 		return new TaskIterator(new CreatePetriTask(netMgr, namingUtil, cnvf, cnvm, eventHelper, calm,
-				synctm, vmm, vmffd, vmffp, petriNet));
+				adapter, vmm, vmffd, vmffp, petriNet));
 	}
 
 }

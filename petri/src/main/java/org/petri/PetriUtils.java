@@ -1,17 +1,37 @@
 package org.petri;
 
 import java.util.ArrayList;
-
+import org.cytoscape.app.CyAppAdapter;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
+import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
 import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.CyNetworkViewFactory;
+import org.cytoscape.view.model.CyNetworkViewManager;
+import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
+import org.cytoscape.view.vizmap.VisualMappingManager;
+import org.cytoscape.work.TaskIterator;
 
 public class PetriUtils {
 
 	private CyNetwork petriNet;
-	public PetriUtils(CyNetwork petriNet) {
+	private VisualMappingManager vmm;
+	private VisualMappingFunctionFactory vmffd;
+	private CyLayoutAlgorithmManager clam;
+	private CyAppAdapter adapter;
+	private CyNetworkViewManager cnvm;
+	private CyNetworkViewFactory cnvf;
+	
+	public PetriUtils(CyNetwork petriNet, VisualMappingManager vmm, VisualMappingFunctionFactory vmffd,
+			CyLayoutAlgorithmManager clam, CyAppAdapter adapter, CyNetworkViewFactory cnvf, CyNetworkViewManager cnvm) {
 		this.petriNet = petriNet;
+		this.vmm = vmm;
+		this.vmffd = vmffd;
+		this.clam = clam;
+		this.adapter=adapter;
+		this.cnvf = cnvf;
+		this.cnvm = cnvm;
 	}
 
 	public void fire(CyNode[] cyTransitionArray) {
@@ -73,7 +93,7 @@ public class PetriUtils {
 		}
 	}
 
-	public void mapFired(int fired, CyNetworkView cnv) {
-		
+	public TaskIterator updateView() {
+		return new TaskIterator(new ViewUpdaterTask(petriNet, vmm, vmffd, clam, adapter, cnvm, cnvf));
 	}
 }

@@ -9,6 +9,7 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.apache.log4j.Logger;
+import org.cytoscape.app.CyAppAdapter;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
@@ -49,7 +50,7 @@ public class CreatePetriTask extends AbstractTask {
 	public File xmlfile; // Ask file for creating Petri Net
 	private final CyEventHelper eventHelper;
 	private final CyLayoutAlgorithmManager calm ;
-	private final SynchronousTaskManager<?> synctm;
+	private final CyAppAdapter adapter;
 	private final VisualMappingManager vmm;
 	private final VisualMappingFunctionFactory vmffd;
 	private final VisualMappingFunctionFactory vmffp;
@@ -58,7 +59,7 @@ public class CreatePetriTask extends AbstractTask {
 	
 	public CreatePetriTask(final CyNetworkManager netMgr, final CyNetworkNaming namingUtil,
 			final CyNetworkViewFactory cnvf, final CyNetworkViewManager cnvm,
-			final CyEventHelper eventHelper, CyLayoutAlgorithmManager calm, SynchronousTaskManager<?> synctm,
+			final CyEventHelper eventHelper, CyLayoutAlgorithmManager calm, CyAppAdapter adapter,
 			VisualMappingManager vmm, VisualMappingFunctionFactory vmffd,
 			VisualMappingFunctionFactory vmffp, CyNetwork petriNet){
 		this.netMgr = netMgr;
@@ -67,7 +68,7 @@ public class CreatePetriTask extends AbstractTask {
 		this.cnvm = cnvm;
 		this.eventHelper = eventHelper;
 		this.calm = calm;
-		this.synctm = synctm;
+		this.adapter = adapter;
 		this.vmm = vmm;
 		this.vmffd = vmffd;
 		this.vmffp = vmffp;
@@ -196,19 +197,22 @@ public class CreatePetriTask extends AbstractTask {
 		shapeMap.putMapValue("Transition", NodeShapeVisualProperty.RECTANGLE);
 		shapeMap.putMapValue("Place", NodeShapeVisualProperty.ELLIPSE);
 		vs.addVisualMappingFunction(shapeMap);
-		PassthroughMapping<String, ?> nameMap = (PassthroughMapping<String, ?>)
-				vmffp.createVisualMappingFunction("id", String.class, BasicVisualLexicon.NODE_LABEL);
-		vs.addVisualMappingFunction(nameMap);
 		for (View<CyNode> v : transitionviews) {
 			v.setLockedValue(BasicVisualLexicon.NODE_WIDTH, 35.0);
 			v.setLockedValue(BasicVisualLexicon.NODE_FILL_COLOR, Color.WHITE);
 		}
 		for (View<CyNode> v : placeviews) {
 		v.setLockedValue(BasicVisualLexicon.NODE_WIDTH, 35.0);
+		v.setLockedValue(BasicVisualLexicon.NODE_FILL_COLOR, Color.RED);
+		v.setLockedValue(BasicVisualLexicon.NODE_LABEL,
+				petriNet.getDefaultNodeTable().getRow(v.getModel().getSUID()).get("name", String.class)+"\n"
+				+ Integer.toString(petriNet.getDefaultNodeTable().getRow(v.getModel().getSUID()).get("tokens", Integer.class)));
 		}
 		CyLayoutAlgorithm def = calm.getDefaultLayout();
 		TaskIterator itr = def.createTaskIterator(cnv, def.getDefaultLayoutContext(), nodeviews, null);
-		synctm.execute(itr);
+		adapter.getTaskManager().execute(itr);
+		SynchronousTaskManager<?> synTaskMan = adapter.getCyServiceRegistrar().getService(SynchronousTaskManager.class);
+		synTaskMan.execute(itr);
 		cnv.updateView();
 		boolean destroyNetwork = false;
 		if (destroyNetwork) {
