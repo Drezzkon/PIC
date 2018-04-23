@@ -2,7 +2,7 @@ Milestone1:
 
 [x] Functionality
 
-[x] Color ranges for places based on token amount
+[x] Labels for places based on token amount
 [x] Correcting Node Shapes
 [x] Firing the network and constructing its state after, including activity of transitions
 [x] Reloading a network
@@ -12,17 +12,16 @@ Milestone1:
 
 Milestone2:
 
-Reversing to a former state(?)(useful to show changes quick)
-
-[x] Adding additional input formats
-Saving petri net (?)
-
-
+[x] Resetting network
+Adding additional input formats
+Saving petri net -> what format?
+[x] getters for different node types
 
 
-Milestone3:
 
-Liveness of transitions and the hole net
+
+Milestone3: (Which of these can Cytoscape already do on its own?)
+Liveness of transitions and the whole net
 
 Reachability(graph?)
 
@@ -43,4 +42,4 @@ T-Clusters -> different cluster methods
 
 Misc.
 
-Logging
+Logging (bane of my existence)
