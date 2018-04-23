@@ -28,10 +28,61 @@ public class PetriUtils {
 	}
 
 	/**
+	 * Getter for all transitions among the nodes of petriNet
+	 * @return CyNode[] containing all transitions
+	 */
+	public CyNode[] getTransitions() {
+		int length = 0;
+		for (CyNode n : petriNet.getNodeList()) {	// Get length of array
+			String ntype = (String) (petriNet.getDefaultNodeTable().getRow(n.getSUID()).get("type", String.class));
+			if (ntype.equals("Transition")) {
+				length++;				
+			}
+		}
+		CyNode[] cyTransitionArray = new CyNode[length];
+		length = 0;
+		for (CyNode n : petriNet.getNodeList()) {	// Insert transitions into array
+			String ntype = (String) (petriNet.getDefaultNodeTable().getRow(n.getSUID()).get("type", String.class));
+			if (ntype.equals("Transition")) {
+				cyTransitionArray[length] = n;
+				length++;
+			}
+		}
+		return cyTransitionArray;
+	}
+
+	/**
+	 * Getter for all places among the nodes of petriNet
+	 * @return CyNode[] containing all places
+	 */
+	public CyNode[] getPlaces() {
+		int length = 0;
+		for (CyNode n : petriNet.getNodeList()) {	// Get length of array
+			String ntype = (String) (petriNet.getDefaultNodeTable().getRow(n.getSUID()).get("type", String.class));
+			if (ntype.equals("Place")) {
+				length++;				
+			}
+		}
+		CyNode[] cyPlaceArray = new CyNode[length];
+		length = 0;
+		for (CyNode n : petriNet.getNodeList()) {
+			String ntype = (String) (petriNet.getDefaultNodeTable().getRow(n.getSUID()).get("type", String.class));
+			if (ntype.equals("Place")) {
+				cyPlaceArray[length] = n;
+				length++;
+			}
+		}
+		return cyPlaceArray;
+	}
+
+	/**
 	 * Fire Petri Net. Goes through all transitions and checks which of them can fired, then does so for those.
 	 * @param cyTransitionArray - Should actually just implement a getter for this and use that instead
 	 */
 	public void fire(CyNode[] cyTransitionArray) {
+		for (CyNode n : cyTransitionArray) {									
+			petriNet.getDefaultNodeTable().getRow(n.getSUID()).set("fired", 0);	// Reset which transitions were fired
+		}
 		ArrayList<CyNode> fireableTransitions = new ArrayList<CyNode>();
 		for (int i=0; i<cyTransitionArray.length; i++){
 			Iterable<CyEdge>incomingEdges = petriNet.getAdjacentEdgeIterable(cyTransitionArray[i], CyEdge.Type.INCOMING); // Incoming Edges for a Transition
@@ -64,8 +115,8 @@ public class PetriUtils {
 		}
 		for (int i = 0; i<cyTransitionArray.length; i++){
 			if (fireableTransitions.contains(cyTransitionArray[i])){	// Updates, which transitions have fired
-				int sofar = petriNet.getDefaultNodeTable().getRow(cyTransitionArray[i].getSUID()).get("fired", Integer.class);
-				petriNet.getDefaultNodeTable().getRow(cyTransitionArray[i].getSUID()).set("fired", sofar+1);
+				//int sofar = petriNet.getDefaultNodeTable().getRow(cyTransitionArray[i].getSUID()).get("fired", Integer.class);
+				petriNet.getDefaultNodeTable().getRow(cyTransitionArray[i].getSUID()).set("fired", 1);
 			}
 		}
 	}
@@ -74,22 +125,11 @@ public class PetriUtils {
 	 * Resets state of Petri Net to the beginning. Should probably just define a getter for cyPlaceArray.
 	 */
 	public void reset() {
-		int length = 0;
-		for (CyNode n : petriNet.getNodeList()) {
-			String ntype = (String) (petriNet.getDefaultNodeTable().getRow(n.getSUID()).get("type", String.class));
-			if (ntype.equals("Place")) {
-				length++;				
-			}
+		CyNode[] cyTransitionArray = getTransitions();
+		for (CyNode n : cyTransitionArray) {									
+			petriNet.getDefaultNodeTable().getRow(n.getSUID()).set("fired", 0);	// Reset how often transitions were fired
 		}
-		CyNode[] cyPlaceArray = new CyNode[length];
-		length = 0;
-		for (CyNode n : petriNet.getNodeList()) {
-			String ntype = (String) (petriNet.getDefaultNodeTable().getRow(n.getSUID()).get("type", String.class));
-			if (ntype.equals("Place")) {
-				cyPlaceArray[length] = n;
-				length++;
-			}
-		}
+		CyNode[] cyPlaceArray = getPlaces();
 		for (CyNode n : cyPlaceArray) {
 			petriNet.getDefaultNodeTable().getRow(n.getSUID()).set("tokens", petriNet.getDefaultNodeTable().getRow(n.getSUID()).get("initial tokens", Integer.class));
 		}

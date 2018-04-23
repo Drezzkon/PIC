@@ -61,8 +61,9 @@ public class PetriTaskFactory extends AbstractTaskFactory{
 		this.petriNet = petriNet;
 	}
 	
+
 	/**
-	 * Creates a new TaskIterator for a PetriTask
+	 * 
 	 */
 	public TaskIterator createTaskIterator(){
 		return new TaskIterator(new PetriTask(netMgr, namingUtil, cnvf, cnvm, eventHelper, calm,

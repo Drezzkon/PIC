@@ -119,25 +119,7 @@ public class PetriPanel extends JPanel implements CytoPanelComponent {
 		Button fireBut = new Button("Fire Petri Net"); 		// Button for firing the Petri Net
 		fireBut.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				int length = 0;
-				for (CyNode n : petriNet.getNodeList()) {
-					String ntype = (String) (petriNet.getDefaultNodeTable().getRow(n.getSUID()).get("type", String.class));
-					if (ntype.equals("Transition")) {
-						length++;				
-					}
-				}
-				CyNode[] cyTransitionArray = new CyNode[length];
-				length = 0;
-				for (CyNode n : petriNet.getNodeList()) {
-					String ntype = (String) (petriNet.getDefaultNodeTable().getRow(n.getSUID()).get("type", String.class));
-					if (ntype.equals("Transition")) {
-						cyTransitionArray[length] = n;
-						length++;
-					}
-				}
-				for (CyNode n : cyTransitionArray) {									// Reset how often transitions were fired
-					petriNet.getDefaultNodeTable().getRow(n.getSUID()).set("fired", 0);	// since last button click
-				}
+				CyNode[] cyTransitionArray = petriUtils.getTransitions();
 				for (int i=0; i<Integer.parseInt(times.getText()); i++) {				// Fire Petri Net x times
 					petriUtils.fire(cyTransitionArray);
 				}
