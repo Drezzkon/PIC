@@ -1,5 +1,6 @@
 package org.petri;
 
+import java.io.File;
 import java.util.Properties;
 
 import org.cytoscape.app.CyAppAdapter;
@@ -16,10 +17,13 @@ import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.work.SynchronousTaskManager;
 import org.osgi.framework.BundleContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 
 public class CyActivator extends AbstractCyActivator {
+	private static Logger logger;
 	public CyActivator() {
 		super();
 	}
@@ -27,6 +31,10 @@ public class CyActivator extends AbstractCyActivator {
 
 	public void start(BundleContext bc) {
 
+		File logFile = new File("petrilog.log");
+		System.setProperty("logfile.name", logFile.getAbsolutePath());
+		logger = LoggerFactory.getLogger(CyActivator.class);
+		logger.info("PetriNet started!");
 		CyAppAdapter adapter = getService(bc, CyAppAdapter.class);
 		CyNetworkManager cyNetworkManagerServiceRef = getService(bc,CyNetworkManager.class);
 		CyNetworkNaming cyNetworkNamingServiceRef = getService(bc,CyNetworkNaming.class);
