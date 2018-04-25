@@ -17,14 +17,39 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-
+/**
+ * Class for loading Petri Nets from different input formats.
+ * Supported Formats:
+ * 	- sbml
+ * 	- pnt
+ * 	- apnn
+ *  - metatool.dat
+ *  - reactionlist
+ *  
+ *  For formats where weight of arcs is not given, a default value
+ *  of 1 is assumed. Similarly, if only an ID is given, but no name,
+ *  the ID will also double as a nodes name. Furthermore, if no
+ *  amount of tokens is specified, it will be defaulted to 0.
+ *  All of these values can then be manually edited in Cytoscape.
+ * @author M. Gehrmann, M. Kirchner
+ *
+ */
 public class FileUtils {
 	File inpFile;
 
+	/**
+	 * Constructor
+	 * @param inpFile - file to read from
+	 */
 	public FileUtils(File inpFile) {
 		this.inpFile = inpFile;
 	}
 
+	/**
+	 * Loads Petri Net from SBML format.
+	 * @param petriNet - Network to be used to represent Petri Net
+	 * @throws Exception - Errors during loading, incorrect format
+	 */
 	public void readXML(CyNetwork petriNet) throws Exception {
 		DocumentBuilderFactory docBuilderFactory = DocumentBuilderFactory.newInstance();
 		DocumentBuilder docBuilder = docBuilderFactory.newDocumentBuilder();
@@ -112,6 +137,11 @@ public class FileUtils {
 		}
 	}
 
+	/**
+	 * Loads Petri Net from PNT format.
+	 * @param petriNet - Network to be used to represent Petri Net
+	 * @throws Exception - Errors during loading, incorrect format
+	 */
 	public void readPNT(CyNetwork petriNet) throws Exception {
 		BufferedReader br = new BufferedReader(new FileReader(inpFile));
 		try {
@@ -174,7 +204,12 @@ public class FileUtils {
 			br.close();
 		}
 	}
-	
+
+	/**
+	 * Loads Petri Net from APNN format.
+	 * @param petriNet - Network to be used to represent Petri Net
+	 * @throws Exception - Errors during loading, incorrect format
+	 */
 	public void readAPNN(CyNetwork petriNet) throws Exception {
 		BufferedReader br = new BufferedReader(new FileReader(inpFile));
 		try {
@@ -286,6 +321,11 @@ public class FileUtils {
 		}
 	}
 
+	/**
+	 * Loads Petri Net from metatool.dat format.
+	 * @param petriNet
+	 * @throws Exception
+	 */
 	public void readDAT(CyNetwork petriNet) throws Exception {
 		// TODO Look up how this looks if it has initial tokens and weights -> change accordingly
 		BufferedReader br = new BufferedReader(new FileReader(inpFile));
@@ -391,6 +431,11 @@ public class FileUtils {
 		}
 	}
 
+	/**
+	 * Loads Petri Net from Reactionlist, assumed extension .txt.
+	 * @param petriNet - Network to be used to represent Petri Net
+	 * @throws Exception - Errors during loading, incorrect format
+	 */
 	public void readRL(CyNetwork petriNet) throws Exception {
 		BufferedReader br = new BufferedReader(new FileReader(inpFile));
 		try {
@@ -464,6 +509,12 @@ public class FileUtils {
 		}
 	}
 
+	/**
+	 * Decides which function to call based on file extension
+	 * @param ext - extension of the file
+	 * @param petriNet - Network to be used to represent Petri Net
+	 * @throws Exception - Errors during loading, incorrect format
+	 */
 	public void choose(String ext, CyNetwork petriNet) throws Exception {
 		if (ext.equals("xml")) {
 			readXML(petriNet);
