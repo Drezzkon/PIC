@@ -175,6 +175,7 @@ public class PetriTask extends AbstractTask {
 		adapter.getTaskManager().execute(itr);
 		SynchronousTaskManager<?> synTaskMan = adapter.getCyServiceRegistrar().getService(SynchronousTaskManager.class);
 		synTaskMan.execute(itr);
+		vs.apply(cnv);
 		cnv.updateView();
 
 		boolean destroyNetwork = false;

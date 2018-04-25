@@ -4,7 +4,7 @@ Bundle-Name: Petri Net for Cytoscape
 Bundle-Version: 1.0
 Built-By: Szarash
 Bundle-ManifestVersion: 2
-Bnd-LastModified: 1524575765160
+Bnd-LastModified: 1524662100566
 Bundle-Activator: org.petri.CyActivator
 Import-Package: javax.swing,javax.xml.parsers,org.cytoscape.app,org.cy
  toscape.application.swing,org.cytoscape.event;version="[3.0,4)",org.c

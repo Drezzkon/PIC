@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.regex.Pattern;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -112,11 +113,177 @@ public class FileUtils {
 	}
 
 	public void readPNT(CyNetwork petriNet) throws Exception {
-		// TODO Auto-generated method stub
+		BufferedReader br = new BufferedReader(new FileReader(inpFile));
+		try {
+			StringBuilder sb = new StringBuilder();
+			String line = br.readLine();
+			
+			while (line != null){
+				sb.append(line);
+				sb.append(System.lineSeparator());
+				line = br.readLine();
+			}
+			String everything = sb.toString();
+			petriNet.getDefaultNodeTable().createColumn("id", String.class, true);
+			petriNet.getDefaultNodeTable().createColumn("tokens", Integer.class, false);
+			petriNet.getDefaultNodeTable().createColumn("initial tokens", Integer.class, true);
+			petriNet.getDefaultNodeTable().createColumn("type", String.class, true);
+			petriNet.getDefaultNodeTable().createColumn("fired", Integer.class, false);
+			petriNet.getDefaultEdgeTable().createColumn("weight", Integer.class, true);
+			ArrayList<CyEdge> edges = new ArrayList<CyEdge>();
+			String splitString[] = everything.split("@");
+			String placesSplit[] = splitString[1].split("\\r?\\n");
+			CyNode [] cyPlaceArray = new CyNode[placesSplit.length - 1];
+			for (int i = 2; i<placesSplit.length; i++){
+				cyPlaceArray[i - 2] = petriNet.addNode();
+				String placeSplit[] = placesSplit[i].split("\\s+");
+				petriNet.getDefaultNodeTable().getRow(cyPlaceArray[i - 2].getSUID()).set("id", "p" + Integer.toString(i - 2));
+				petriNet.getDefaultNodeTable().getRow(cyPlaceArray[i - 2].getSUID()).set("name", placeSplit[2]);
+				petriNet.getDefaultNodeTable().getRow(cyPlaceArray[i - 2].getSUID()).set("tokens", 0);
+				petriNet.getDefaultNodeTable().getRow(cyPlaceArray[i - 2].getSUID()).set("initial tokens", 0);
+				petriNet.getDefaultNodeTable().getRow(cyPlaceArray[i - 2].getSUID()).set("type", "Place");
+			}
+			String transitionsSplit[] = splitString[2].split("\\r?\\n");
+			CyNode [] cyTransitionArray = new CyNode[transitionsSplit.length - 1];
+			for (int i = 2; i<transitionsSplit.length; i++){
+				cyTransitionArray[i - 2] = petriNet.addNode();
+				String transitionSplit[] = transitionsSplit[i].split("\\s+");
+				petriNet.getDefaultNodeTable().getRow(cyTransitionArray[i - 2].getSUID()).set("id","t" + Integer.toString(i - 2));
+				petriNet.getDefaultNodeTable().getRow(cyTransitionArray[i - 2].getSUID()).set("name", transitionSplit[2]);
+				petriNet.getDefaultNodeTable().getRow(cyTransitionArray[i - 2].getSUID()).set("type", "Transition");
+				petriNet.getDefaultNodeTable().getRow(cyTransitionArray[i - 2].getSUID()).set("fired", 0);
+			}
+			String edgesSplit[] = splitString[0].split("\\r?\\n");
+			for (int i = 1; i<edgesSplit.length; i++){
+				String placeEdgesSplit[] = edgesSplit[i].split(",");
+				String incomingEdges[] = placeEdgesSplit[0].split("\\s+");
+				String outgoingEdges[] = placeEdgesSplit[1].split("\\s+");
+				for (int x = 3; x < incomingEdges.length; x++){
+					edges.add(petriNet.addEdge(cyTransitionArray[Integer.parseInt(incomingEdges[x])], cyPlaceArray[i - 1], true));
+				}
+				for (int x = 1; x < outgoingEdges.length; x++){
+					edges.add(petriNet.addEdge(cyPlaceArray[i - 1], cyTransitionArray[Integer.parseInt(outgoingEdges[x])], true));
+				}
+			}
+			for (CyEdge e : edges){
+				petriNet.getDefaultEdgeTable().getRow(e.getSUID()).set("name", petriNet.getDefaultNodeTable().getRow(e.getSource().getSUID()).get("name", String.class)+"->"+petriNet.getDefaultNodeTable().getRow(e.getTarget().getSUID()).get("name", String.class));
+				petriNet.getDefaultEdgeTable().getRow(e.getSUID()).set("weight", 0);
+			}
+		}
+		finally{
+			br.close();
+		}
 	}
 	
 	public void readAPNN(CyNetwork petriNet) throws Exception {
-		// TODO Auto-generated method stub
+		BufferedReader br = new BufferedReader(new FileReader(inpFile));
+		try {
+			StringBuilder sb = new StringBuilder();
+			String line = br.readLine();
+			
+			while (line != null){
+				sb.append(line);
+				sb.append(System.lineSeparator());
+				line = br.readLine();
+			}
+			String everything = sb.toString();
+			String splitString[] = everything.split("\\r?\\n");
+			petriNet.getDefaultNodeTable().createColumn("id", String.class, true);
+			petriNet.getDefaultNodeTable().createColumn("tokens", Integer.class, false);
+			petriNet.getDefaultNodeTable().createColumn("initial tokens", Integer.class, true);
+			petriNet.getDefaultNodeTable().createColumn("type", String.class, true);
+			petriNet.getDefaultNodeTable().createColumn("fired", Integer.class, false);
+			petriNet.getDefaultEdgeTable().createColumn("weight", Integer.class, true);
+			ArrayList<CyNode> places = new ArrayList<CyNode>();
+			ArrayList<CyNode> transitions = new ArrayList<CyNode>();
+			String sep = "\\";
+			for (String currLine : splitString) {
+				String lineSplit[] = currLine.split(Pattern.quote(sep));
+				if (lineSplit.length == 1) {
+					continue;
+				}
+				if (lineSplit[1].contains("place")) {
+					CyNode place = petriNet.addNode();
+					places.add(place);
+					petriNet.getDefaultNodeTable().getRow(place.getSUID()).set("type", "Place");
+					for (String split : lineSplit) {
+						if (split.length() == 0) {
+							continue;
+						}
+						int pos1 = split.indexOf("{");
+						int pos2 = split.indexOf("}");
+						if (split.substring(0, pos1).equals("place")) {
+							petriNet.getDefaultNodeTable().getRow(place.getSUID()).set("id", split.substring(pos1+1, pos2));
+						}
+						else if (split.substring(0, pos1).equals("name")) {
+							petriNet.getDefaultNodeTable().getRow(place.getSUID()).set("name", split.substring(pos1+1, pos2));
+						}
+						else if (split.substring(0, pos1).equals("init")) {
+							petriNet.getDefaultNodeTable().getRow(place.getSUID()).set("initial tokens",
+									Integer.parseInt(split.substring(pos1+1, pos2)));
+							petriNet.getDefaultNodeTable().getRow(place.getSUID()).set("tokens", 
+									Integer.parseInt(split.substring(pos1+1, pos2)));
+						}
+					}
+				}
+				else if (lineSplit[1].contains("transition")) {
+					CyNode trans = petriNet.addNode();
+					transitions.add(trans);
+					petriNet.getDefaultNodeTable().getRow(trans.getSUID()).set("type", "Transition");
+					petriNet.getDefaultNodeTable().getRow(trans.getSUID()).set("fired", 0);
+					for (String split : lineSplit) {
+						if (split.length() == 0) {
+							continue;
+						}
+						int pos1 = split.indexOf("{");
+						int pos2 = split.indexOf("}");
+						if (split.substring(0, pos1).equals("transition")) {
+							petriNet.getDefaultNodeTable().getRow(trans.getSUID()).set("id", split.substring(pos1+1, pos2));
+						}
+						else if (split.substring(0, pos1).equals("name")) {
+							petriNet.getDefaultNodeTable().getRow(trans.getSUID()).set("name", split.substring(pos1+1, pos2));
+						}
+					}
+				}
+				else if (lineSplit[1].contains("arc")) {
+					CyNode source = null;
+					int pos1 = lineSplit[2].indexOf("{");
+					int pos2 = lineSplit[2].indexOf("}");
+					String idS = lineSplit[2].substring(pos1+1, pos2);
+					for (CyNode n : petriNet.getNodeList()) {
+						if (petriNet.getDefaultNodeTable().getRow(n.getSUID()).get("id", String.class).equals(idS)) {
+							source = n;
+							break;
+						}
+					}
+					CyNode target = null;
+					pos1 = lineSplit[3].indexOf("{");
+					pos2 = lineSplit[3].indexOf("}");
+					String idT = lineSplit[3].substring(pos1+1, pos2);
+					for (CyNode n : petriNet.getNodeList()) {
+						if (petriNet.getDefaultNodeTable().getRow(n.getSUID()).get("id", String.class).equals(idT)) {
+							target = n;
+							break;
+						}
+					}
+					CyEdge arc = petriNet.addEdge(source, target, true);
+					pos1 = lineSplit[1].indexOf("{");
+					pos2 = lineSplit[1].indexOf("}");
+					petriNet.getDefaultEdgeTable().getRow(arc.getSUID()).set("name", lineSplit[1].substring(pos1+1, pos2));
+					for (int i = 4; i < lineSplit.length; i++) {
+						if (lineSplit[i].contains("weight")){
+							pos1 = lineSplit[i].indexOf("{");
+							pos2 = lineSplit[i].indexOf("}");
+							petriNet.getDefaultEdgeTable().getRow(arc.getSUID()).set("weight",
+									Integer.parseInt(lineSplit[i].substring(pos1+1, pos2)));
+						}
+					}
+				}
+			}
+		}
+		finally {
+			br.close();
+		}
 	}
 
 	public void readDAT(CyNetwork petriNet) throws Exception {
