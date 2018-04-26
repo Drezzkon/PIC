@@ -86,12 +86,12 @@ public class PetriPanel extends JPanel implements CytoPanelComponent {
 				}
 				petriNet = cyNetworkFactoryServiceRef.createNetwork();	// New Network for Petri Net
 				cyNetworkManagerServiceRef.addNetwork(petriNet);
+				petriUtils = new PetriUtils(petriNet, cyNetworkViewManagerServiceRef); // Used for updating views later on
 				PetriTaskFactory = new PetriTaskFactory(cyNetworkManagerServiceRef,	// Fill Petri Net with nodes and apply default views/layout
 						cyNetworkNamingServiceRef,cyNetworkViewFactoryServiceRef,cyNetworkViewManagerServiceRef,
 						eventHelperServiceRef,cyLayoutAlgorithmManagerRef, adapter, 
 						visualMappingManagerRef,visualMappingFunctionFactoryRefd, 
-						visualMappingFunctionFactoryRefp, petriNet);
-				petriUtils = new PetriUtils(petriNet, cyNetworkViewManagerServiceRef); // Used for updating views later on
+						visualMappingFunctionFactoryRefp, petriNet, petriUtils);
 				TaskIterator petri = PetriTaskFactory.createTaskIterator();
 				adapter.getTaskManager().execute(petri);
 				SynchronousTaskManager<?> synTaskMan = adapter.getCyServiceRegistrar().getService(SynchronousTaskManager.class);

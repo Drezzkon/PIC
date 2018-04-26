@@ -50,6 +50,7 @@ public class PetriTask extends AbstractTask {
 	private final VisualMappingManager vmm;
 	private final VisualMappingFunctionFactory vmffd;
 	private final CyNetwork petriNet;
+	private final PetriUtils petriUtils;
 	
 	/**
 	 * Constructor
@@ -67,7 +68,8 @@ public class PetriTask extends AbstractTask {
 	public PetriTask(final CyNetworkManager netMgr, final CyNetworkNaming namingUtil,
 			final CyNetworkViewFactory cnvf, final CyNetworkViewManager cnvm,
 			final CyEventHelper eventHelper, CyLayoutAlgorithmManager calm, CyAppAdapter adapter,
-			VisualMappingManager vmm, VisualMappingFunctionFactory vmffd, CyNetwork petriNet){
+			VisualMappingManager vmm, VisualMappingFunctionFactory vmffd, CyNetwork petriNet,
+			PetriUtils petriUtils){
 		this.netMgr = netMgr;
 		this.namingUtil = namingUtil;
 		this.cnvf = cnvf;
@@ -78,6 +80,7 @@ public class PetriTask extends AbstractTask {
 		this.vmm = vmm;
 		this.vmffd = vmffd;
 		this.petriNet = petriNet;
+		this.petriUtils = petriUtils;
 	}
 
 	@SuppressWarnings({ "unchecked", "rawtypes" })
@@ -107,31 +110,9 @@ public class PetriTask extends AbstractTask {
 		else {
 			throw new Exception("Could not find extension"); // No extension could be found (no "." in fileName)
 		}
-		int places = 0; int transitions = 0;	// Number of places and transitions, used for array size
-		for (CyNode n : petriNet.getNodeList()) {
-			String ntype = (String) (petriNet.getDefaultNodeTable().getRow(n.getSUID()).get("type", String.class));
-			if (ntype.equals("Place")) {
-				places++;	
-			}
-			else if (ntype.equals("Transition")) {
-				transitions++;
-			}
-		}
-		CyNode[] cyPlaceArray = new CyNode[places];
-		CyNode[] cyTransitionArray = new CyNode[transitions];
-		places = 0; transitions = 0;	// Reset for filling arrays
-		for (CyNode n : petriNet.getNodeList()) {
-			String ntype = (String) (petriNet.getDefaultNodeTable().getRow(n.getSUID()).get("type", String.class));
-			if (ntype.equals("Place")) {
-				cyPlaceArray[places] = n;
-				places++;
-			}
-			else if (ntype.equals("Transition")) {
-				cyTransitionArray[transitions] = n;
-				transitions++;
-			}
-		}
-		
+		CyNode[] cyPlaceArray = petriUtils.getPlaces();
+		CyNode[] cyTransitionArray = petriUtils.getTransitions();
+
 		eventHelper.flushPayloadEvents();
 		CyNetworkView cnv = cnvf.createNetworkView(petriNet);		// Setting up view
 		Set <View<CyNode>> nodeviews = new HashSet<View<CyNode>>();	// Used for layout

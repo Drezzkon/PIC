@@ -13,7 +13,7 @@ Milestone1:
 Milestone2:
 
 [x] Resetting network
-[x] Adding additional input formats
+Adding additional input formats
 Saving petri net -> what format?
 [x] getters for different node types
 

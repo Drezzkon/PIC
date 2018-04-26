@@ -29,6 +29,7 @@ public class PetriTaskFactory extends AbstractTaskFactory{
 	private final VisualMappingManager vmm;
 	private final VisualMappingFunctionFactory vmffd;
 	private final CyNetwork petriNet;
+	private final PetriUtils petriUtils;
 	
 	/**
 	 * Constructor
@@ -48,7 +49,8 @@ public class PetriTaskFactory extends AbstractTaskFactory{
 			final CyNetworkViewFactory cnvf, final CyNetworkViewManager cnvm,
 			final CyEventHelper eventHelper, CyLayoutAlgorithmManager calm, CyAppAdapter adapter,
 			VisualMappingManager vmm, VisualMappingFunctionFactory vmffd, 
-			VisualMappingFunctionFactory vmffp, final CyNetwork petriNet){
+			VisualMappingFunctionFactory vmffp, final CyNetwork petriNet,
+			final PetriUtils petriUtils){
 		this.netMgr = netMgr;
 		this.namingUtil = namingUtil;
 		this.cnvf = cnvf;
@@ -59,6 +61,7 @@ public class PetriTaskFactory extends AbstractTaskFactory{
 		this.vmm = vmm;
 		this.vmffd = vmffd;
 		this.petriNet = petriNet;
+		this.petriUtils = petriUtils;
 	}
 	
 
@@ -67,7 +70,7 @@ public class PetriTaskFactory extends AbstractTaskFactory{
 	 */
 	public TaskIterator createTaskIterator(){
 		return new TaskIterator(new PetriTask(netMgr, namingUtil, cnvf, cnvm, eventHelper, calm,
-				adapter, vmm, vmffd, petriNet));
+				adapter, vmm, vmffd, petriNet, petriUtils));
 	}
 
 }
