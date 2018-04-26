@@ -90,6 +90,12 @@ public class PetriTask extends AbstractTask {
 	public void run(TaskMonitor monitor) throws Exception {
 		petriNet.getRow(petriNet).set(CyNetwork.NAME,
 			      namingUtil.getSuggestedNetworkTitle("Petri Net"));
+		petriNet.getDefaultNodeTable().createColumn("id", String.class, true);
+		petriNet.getDefaultNodeTable().createColumn("tokens", Integer.class, false);
+		petriNet.getDefaultNodeTable().createColumn("initial tokens", Integer.class, true);
+		petriNet.getDefaultNodeTable().createColumn("type", String.class, true);
+		petriNet.getDefaultNodeTable().createColumn("fired", Integer.class, false);
+		petriNet.getDefaultEdgeTable().createColumn("weight", Integer.class, true);
 		String fileName = inpFile.getName(); 	// Get extension of input file
 		String extension = "";
 		int dot = fileName.lastIndexOf('.');
