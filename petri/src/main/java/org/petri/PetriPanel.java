@@ -152,6 +152,5 @@ public class PetriPanel extends JPanel implements CytoPanelComponent {
 	@Override
 	public String getTitle() {
 		return "PetriNet";
-	}
-	
+	}	
 }

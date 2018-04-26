@@ -13,33 +13,24 @@ Milestone1:
 Milestone2:
 
 [x] Resetting network
-Adding additional input formats
-Saving petri net -> what format?
-[x] getters for different node types
+[x] Adding additional input formats
+[x] Getters for different node types
 
 
 
 
-Milestone3: (Which of these can Cytoscape already do on its own?)
-Liveness of transitions and the whole net
+Milestone3:
+    Create new Petri Net (Button)
+    Apply View (Button)
+    Load from KGNL format
+    Verify Petri Net Button including Error Messages: why is it invalid
+    Separate Token Amount from Label
+    Implement asynchronous firing
 
-Reachability(graph?)
-
-Boundedness
-
-
-(hard to calculate probably, maybe impossible):
-
-Fastest ways to state/token in a certain place
-
-something with p- and t-invariants
-
-maximal common transition sets
-
-T-Clusters -> different cluster methods
-
-
+Milestone4:
+    Calculation of Invariants
+    Color Mapping based on Invariants
 
 Misc.
 
-Logging (bane of my existence)
+Logging

@@ -74,4 +74,3 @@ public class ViewUpdaterTask extends AbstractTask {
 		cnv.updateView();
 	}
 }
-

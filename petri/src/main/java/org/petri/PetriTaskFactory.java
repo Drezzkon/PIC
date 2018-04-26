@@ -72,5 +72,4 @@ public class PetriTaskFactory extends AbstractTaskFactory{
 		return new TaskIterator(new PetriTask(netMgr, namingUtil, cnvf, cnvm, eventHelper, calm,
 				adapter, vmm, vmffd, petriNet, petriUtils));
 	}
-
 }
