@@ -10,7 +10,6 @@ import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
-import org.cytoscape.view.presentation.property.NodeShapeVisualProperty;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
 
@@ -49,6 +48,7 @@ public class ViewUpdaterTask extends AbstractTask {
 		Set <View<CyNode>> placeviews = new HashSet<View<CyNode>>();
 		Set <View<CyNode>> transitionviews = new HashSet<View<CyNode>>();
 		for (View<CyNode> v : cnv.getNodeViews()) {		// Separate views in places and transitions
+			v.setLockedValue(BasicVisualLexicon.NODE_WIDTH, 35.0);
 			String ntype = petriNet.getDefaultNodeTable().getRow(v.getModel().getSUID()).get("type", String.class);
 			if (ntype.equals("Transition")) {
 				transitionviews.add(v);
@@ -58,7 +58,6 @@ public class ViewUpdaterTask extends AbstractTask {
 			}
 		}
 		for (View<CyNode> v : transitionviews) {
-			v.setLockedValue(BasicVisualLexicon.NODE_SHAPE, NodeShapeVisualProperty.RECTANGLE);
 			if (petriNet.getDefaultNodeTable().getRow(v.getModel().getSUID()).get("fired", Integer.class) == 1) {
 				v.setLockedValue(BasicVisualLexicon.NODE_FILL_COLOR, Color.GREEN);	// Green if fired
 			}
@@ -67,7 +66,8 @@ public class ViewUpdaterTask extends AbstractTask {
 			}
 		}
 		for (View<CyNode> v : placeviews) {
-		v.setLockedValue(BasicVisualLexicon.NODE_LABEL,	// New token amounts
+			v.setLockedValue(BasicVisualLexicon.NODE_FILL_COLOR, Color.RED);
+			v.setLockedValue(BasicVisualLexicon.NODE_LABEL,	// New token amounts
 				petriNet.getDefaultNodeTable().getRow(v.getModel().getSUID()).get("name", String.class)+"\n"
 				+ Integer.toString(petriNet.getDefaultNodeTable().getRow(v.getModel().getSUID()).get("tokens", Integer.class)));
 		}

@@ -56,7 +56,6 @@ public class PetriPanel extends JPanel implements CytoPanelComponent {
 	 * @param synchronousTaskManagerRef
 	 * @param visualMappingManagerRef
 	 * @param visualMappingFunctionFactoryRefd
-	 * @param visualMappingFunctionFactoryRefp
 	 * @param adapter
 	 */
 	public PetriPanel(final CyNetworkManager cyNetworkManagerServiceRef,
@@ -69,7 +68,6 @@ public class PetriPanel extends JPanel implements CytoPanelComponent {
 			final SynchronousTaskManager<?> synchronousTaskManagerRef,
 			final VisualMappingManager visualMappingManagerRef,
 			final VisualMappingFunctionFactory visualMappingFunctionFactoryRefd,
-			final VisualMappingFunctionFactory visualMappingFunctionFactoryRefp,
 			final CyAppAdapter adapter) {
 		super();
 		jPanel = new JPanel();					// Main panel, later added to PetriPanel
@@ -78,6 +76,32 @@ public class PetriPanel extends JPanel implements CytoPanelComponent {
 		JPanel top = new JPanel();				// Upper Panel of jPanel
 		top.setLayout(new GridLayout(0,1));
 		top.add(new Label("Control Panel for Petri Net App"));
+		Button createBut = new Button("Create new Petri Net");
+		createBut.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				if (petriNet != null) {						// Destroy previously loaded Petri Net, only one active at a time
+					cyNetworkManagerServiceRef.destroyNetwork(petriNet);
+					}
+					petriNet = cyNetworkFactoryServiceRef.createNetwork();	// New Network for Petri Net
+					cyNetworkManagerServiceRef.addNetwork(petriNet);
+					petriUtils = new PetriUtils(petriNet, cyNetworkViewManagerServiceRef,	// Used for updating views later on
+							cyNetworkViewFactoryServiceRef, visualMappingManagerRef,
+							cyLayoutAlgorithmManagerRef, adapter, visualMappingFunctionFactoryRefd); 
+					petriUtils.initializeColumns();
+					petriUtils.createVisualStyle();
+			}
+		});
+		top.add(createBut);
+		Button viewBut = new Button("Update Views");
+		viewBut.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				TaskIterator itr = petriUtils.updateView();
+				adapter.getTaskManager().execute(itr);
+				SynchronousTaskManager<?> synTaskMan = adapter.getCyServiceRegistrar().getService(SynchronousTaskManager.class);
+				synTaskMan.execute(itr);
+			}
+		});
+		top.add(viewBut);
 		Button loadBut = new Button("Load Petri Net");		// Button for loading new Petri Nets
 		loadBut.addActionListener(new ActionListener() {	
 			public void actionPerformed(ActionEvent e) {
@@ -86,12 +110,12 @@ public class PetriPanel extends JPanel implements CytoPanelComponent {
 				}
 				petriNet = cyNetworkFactoryServiceRef.createNetwork();	// New Network for Petri Net
 				cyNetworkManagerServiceRef.addNetwork(petriNet);
-				petriUtils = new PetriUtils(petriNet, cyNetworkViewManagerServiceRef); // Used for updating views later on
+				petriUtils = new PetriUtils(petriNet, cyNetworkViewManagerServiceRef,	 // Used for updating views later on
+						cyNetworkViewFactoryServiceRef, visualMappingManagerRef,
+						cyLayoutAlgorithmManagerRef, adapter, visualMappingFunctionFactoryRefd);
 				PetriTaskFactory = new PetriTaskFactory(cyNetworkManagerServiceRef,	// Fill Petri Net with nodes and apply default views/layout
-						cyNetworkNamingServiceRef,cyNetworkViewFactoryServiceRef,cyNetworkViewManagerServiceRef,
-						eventHelperServiceRef,cyLayoutAlgorithmManagerRef, adapter, 
-						visualMappingManagerRef,visualMappingFunctionFactoryRefd, 
-						visualMappingFunctionFactoryRefp, petriNet, petriUtils);
+						cyNetworkNamingServiceRef,cyNetworkViewManagerServiceRef,
+						eventHelperServiceRef,petriNet, petriUtils);
 				TaskIterator petri = PetriTaskFactory.createTaskIterator();
 				adapter.getTaskManager().execute(petri);
 				SynchronousTaskManager<?> synTaskMan = adapter.getCyServiceRegistrar().getService(SynchronousTaskManager.class);
