@@ -427,6 +427,11 @@ public class FileUtils {
 		}
 	}
 
+	/**
+	 * Extracts content of input file
+	 * @return content of input file
+	 * @throws IOException
+	 */
 	public String getContent() throws IOException {
 		BufferedReader br = new BufferedReader(new FileReader(inpFile));
 		try {
@@ -445,6 +450,7 @@ public class FileUtils {
 			br.close();
 		}
 	}
+	
 	/**
 	 * Decides which function to call based on file extension
 	 * @param ext - extension of the file

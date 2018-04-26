@@ -23,7 +23,7 @@ Milestone3:
 [x] Create new Petri Net (Button)
 [x] Apply View (Button)
 []  Load from KGNL format
-[]  Verify Petri Net Button including Error Messages: why is it invalid
+[x] Verify Petri Net Button including Error Messages: why is it invalid
 []  Separate Token Amount from Label
 []  Implement asynchronous firing
 

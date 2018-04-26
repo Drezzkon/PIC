@@ -2,20 +2,20 @@ Manifest-Version: 1.0
 Bundle-SymbolicName: org.petri
 Bundle-Name: Petri Net for Cytoscape
 Bundle-Version: 1.0
-Built-By: Szarash
+Built-By: Marcel
 Bundle-ManifestVersion: 2
-Bnd-LastModified: 1524745266994
+Bnd-LastModified: 1524768004054
 Bundle-Activator: org.petri.CyActivator
 Import-Package: javax.swing,javax.xml.parsers,org.cytoscape.app;versio
- n="[3.0,4)",org.cytoscape.application.swing;version="[3.0,4)",org.cyt
- oscape.event;version="[3.0,4)",org.cytoscape.model;version="[3.0,4)",
- org.cytoscape.service.util;version="[3.0,4)",org.cytoscape.session;ve
- rsion="[3.0,4)",org.cytoscape.view.layout;version="[3.0,4)",org.cytos
- cape.view.model;version="[3.0,4)",org.cytoscape.view.presentation.pro
- perty;version="[3.0,4)",org.cytoscape.view.presentation.property.valu
- es;version="[3.0,4)",org.cytoscape.view.vizmap;version="[3.0,4)",org.
- cytoscape.view.vizmap.mappings;version="[3.0,4)",org.cytoscape.work;v
- ersion="[3.0,4)",org.osgi.framework;version="[1.5,2)",org.slf4j;versi
+ n="[3.6,4)",org.cytoscape.application.swing;version="[3.6,4)",org.cyt
+ oscape.event;version="[3.6,4)",org.cytoscape.model;version="[3.6,4)",
+ org.cytoscape.service.util;version="[3.6,4)",org.cytoscape.session;ve
+ rsion="[3.6,4)",org.cytoscape.view.layout;version="[3.6,4)",org.cytos
+ cape.view.model;version="[3.6,4)",org.cytoscape.view.presentation.pro
+ perty;version="[3.6,4)",org.cytoscape.view.presentation.property.valu
+ es;version="[3.6,4)",org.cytoscape.view.vizmap;version="[3.6,4)",org.
+ cytoscape.view.vizmap.mappings;version="[3.6,4)",org.cytoscape.work;v
+ ersion="[3.6,4)",org.osgi.framework;version="[1.5,2)",org.slf4j;versi
  on="[1.5,2)",org.w3c.dom
 Created-By: Apache Maven Bundle Plugin
 Tool: Bnd-1.15.0

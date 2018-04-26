@@ -123,6 +123,13 @@ public class PetriPanel extends JPanel implements CytoPanelComponent {
 			}
 		});
 		top.add(loadBut);
+		Button veriBut = new Button("Verify PetriNet");
+		veriBut.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				petriUtils.verifyNet();
+			}
+		});
+		top.add(veriBut);
 		Button resetBut = new Button("Reset Petri Net");	// Button for resetting tokens and fired
 		resetBut.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {

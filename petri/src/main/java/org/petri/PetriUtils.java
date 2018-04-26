@@ -5,6 +5,9 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
 
+import javax.swing.JFrame;
+import javax.swing.JOptionPane;
+
 import org.cytoscape.app.CyAppAdapter;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
@@ -116,7 +119,9 @@ public class PetriUtils {
 		petriNet.getDefaultEdgeTable().createColumn("weight", Integer.class, true);
 	}
 	
-	
+	/**
+	 * Create Visual Style for new Petri Net
+	 */
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public void createVisualStyle() {
 		CyNode[] cyPlaceArray = getPlaces();
@@ -171,6 +176,72 @@ public class PetriUtils {
 		synTaskMan.execute(itr);
 		vs.apply(cnv);
 		cnv.updateView();
+	}
+	
+	/**
+	 * Verify correctness of Petri Net
+	 */
+	public void verifyNet() {
+		CyNode cyNodeArray[] = new CyNode[petriNet.getNodeCount()];
+		CyEdge cyEdgeArray[] = new CyEdge[petriNet.getEdgeCount()];
+		petriNet.getEdgeList().toArray(cyEdgeArray);
+		petriNet.getNodeList().toArray(cyNodeArray);
+		ArrayList<String> errors = new ArrayList<String>();
+		for (CyNode n : cyNodeArray) {
+			if (petriNet.getDefaultNodeTable().getRow(n.getSUID()).get("type", String.class) == null) {
+				errors.add(petriNet.getDefaultNodeTable().getRow(n.getSUID()).get("name", String.class) + ": missing type");
+			}
+			else if (petriNet.getDefaultNodeTable().getRow(n.getSUID()).get("type", String.class).equals("Place")) {
+				if (petriNet.getDefaultNodeTable().getRow(n.getSUID()).get("tokens", Integer.class) == null) {
+					errors.add(petriNet.getDefaultNodeTable().getRow(n.getSUID()).get("name", String.class) + ": missing tokens");
+				}
+				if (petriNet.getDefaultNodeTable().getRow(n.getSUID()).get("initial tokens", Integer.class) == null) {
+					errors.add(petriNet.getDefaultNodeTable().getRow(n.getSUID()).get("name", String.class) + ": missing initial tokens");				
+				}
+				if (petriNet.getDefaultNodeTable().getRow(n.getSUID()).get("fired", Integer.class) != null) {
+					errors.add(petriNet.getDefaultNodeTable().getRow(n.getSUID()).get("name", String.class) +
+							": fired should not be defined for place");
+				}
+			}
+			else if (petriNet.getDefaultNodeTable().getRow(n.getSUID()).get("type", String.class).equals("Transition")) {
+				if (petriNet.getDefaultNodeTable().getRow(n.getSUID()).get("fired", Integer.class) == null) {
+					errors.add(petriNet.getDefaultNodeTable().getRow(n.getSUID()).get("name", String.class) + ": missing fired");
+				}
+				if (petriNet.getDefaultNodeTable().getRow(n.getSUID()).get("tokens", Integer.class) != null) {
+					errors.add(petriNet.getDefaultNodeTable().getRow(n.getSUID()).get("name", String.class) +
+							": tokens should not be defined for transition");
+				}
+				if (petriNet.getDefaultNodeTable().getRow(n.getSUID()).get("initial tokens", Integer.class) != null) {
+					errors.add(petriNet.getDefaultNodeTable().getRow(n.getSUID()).get("name", String.class) +
+							": initial tokens should not be defined for transition");
+				}
+			}
+		}
+		for (CyEdge e : cyEdgeArray) {
+			if (petriNet.getDefaultEdgeTable().getRow(e.getSUID()).get("weight", Integer.class) == null ||
+					petriNet.getDefaultEdgeTable().getRow(e.getSUID()).get("weight", Integer.class) < 1) {
+				errors.add(petriNet.getDefaultEdgeTable().getRow(e.getSUID()).get("name", String.class) + ": missing or negative weight");
+			}
+			if (petriNet.getDefaultNodeTable().getRow(e.getSource().getSUID()).get("type", String.class) == null ||
+					petriNet.getDefaultNodeTable().getRow(e.getTarget().getSUID()).get("type", String.class) == null) {
+				continue;
+			}
+			else if (petriNet.getDefaultNodeTable().getRow(e.getSource().getSUID()).get("type", String.class).equals("Place")){
+				if (petriNet.getDefaultNodeTable().getRow(e.getTarget().getSUID()).get("type", String.class).equals("Place")){
+					errors.add(petriNet.getDefaultEdgeTable().getRow(e.getSUID()).get("name", String.class) + ": connects two places");
+				}
+			}
+			else if (petriNet.getDefaultNodeTable().getRow(e.getSource().getSUID()).get("type", String.class).equals("Transition")) {
+				if (petriNet.getDefaultNodeTable().getRow(e.getTarget().getSUID()).get("type", String.class).equals("Transition")) {
+					errors.add(petriNet.getDefaultEdgeTable().getRow(e.getSUID()).get("name", String.class) + ": connects two transitions");
+				}
+			}
+		}
+		JFrame f = new JFrame("Errors during verification");
+		// TODO FORMAT ERROR MESSAGE
+		String msg = errors.toString().replaceAll(",", System.lineSeparator());
+		msg = msg.replace("[", "").replace("]", "");
+		JOptionPane.showMessageDialog(f, msg);
 	}
 	
 	/**
