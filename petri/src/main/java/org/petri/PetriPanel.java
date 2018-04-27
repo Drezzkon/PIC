@@ -168,17 +168,17 @@ public class PetriPanel extends JPanel implements CytoPanelComponent {
 		JPanel but = new JPanel();					// Lower panel of jPanel
 		but.setLayout(new GridLayout(0,2));
 		JRadioButton radSync = new JRadioButton("Synchronous firing");
-		radSync.setSelected(true);
-		firingMode = true;
+		firingMode = false;
 		radSync.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				firingMode = true;
 			}
 		});
 		JRadioButton radAsync = new JRadioButton("Asynchronous firing");
+		radAsync.setSelected(true);
 		radAsync.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				firingMode = true;
+				firingMode = false;
 			}
 		});
 		random = false;

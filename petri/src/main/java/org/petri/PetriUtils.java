@@ -241,9 +241,11 @@ public class PetriUtils {
 			}
 		}
 		JFrame f = new JFrame("Errors during verification");
-		// TODO FORMAT ERROR MESSAGE
 		String msg = errors.toString().replaceAll(",", System.lineSeparator());
 		msg = msg.replace("[", "").replace("]", "");
+		if (msg.equals("")) {
+			msg = "No errors found";
+		}
 		JOptionPane.showMessageDialog(f, msg);
 	}
 	
@@ -282,6 +284,7 @@ public class PetriUtils {
 					petriNet.getDefaultNodeTable().getRow(incomingEdge.getSource().getSUID()).set("tokens", newAmount);
 				}
 				if (!firingMode) {
+					JOptionPane.showMessageDialog(new JFrame(), "firingMode = false");
 					break;
 				}
 			}
