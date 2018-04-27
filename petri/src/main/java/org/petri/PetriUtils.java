@@ -2,7 +2,10 @@ package org.petri;
 
 import java.awt.Color;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import javax.swing.JFrame;
@@ -246,11 +249,18 @@ public class PetriUtils {
 	
 	/**
 	 * Fire Petri Net. Goes through all transitions and checks which of them can fired, then does so for those.
-	 * @param cyTransitionArray - Should actually just implement a getter for this and use that instead
+	 * @param cyTransitionArray - Array of transition type nodes
+	 * @param random - randomize firing order
+	 * @param firingMode - synchronous (true) or asynchronous (false) firing
 	 */
-	public void fire(CyNode[] cyTransitionArray) {
+	public void fire(CyNode[] cyTransitionArray, boolean firingMode, boolean random) {
 		for (CyNode n : cyTransitionArray) {									
 			petriNet.getDefaultNodeTable().getRow(n.getSUID()).set("fired", 0);	// Reset which transitions were fired
+		}
+		if (random) {
+			List <CyNode> transitions = Arrays.asList(cyTransitionArray);
+			Collections.shuffle(transitions);
+			transitions.toArray(cyTransitionArray);
 		}
 		ArrayList<CyNode> fireableTransitions = new ArrayList<CyNode>();
 		for (int i=0; i<cyTransitionArray.length; i++){
@@ -270,6 +280,9 @@ public class PetriUtils {
 					Integer newAmount = petriNet.getDefaultNodeTable().getRow(incomingEdge.getSource().getSUID()).get("tokens", Integer.class)
 							- petriNet.getDefaultEdgeTable().getRow(incomingEdge.getSUID()).get("weight", Integer.class);
 					petriNet.getDefaultNodeTable().getRow(incomingEdge.getSource().getSUID()).set("tokens", newAmount);
+				}
+				if (!firingMode) {
+					break;
 				}
 			}
 		}

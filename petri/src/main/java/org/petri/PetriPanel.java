@@ -9,8 +9,12 @@ import java.awt.Label;
 import java.awt.TextField;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+
+import javax.swing.ButtonGroup;
 import javax.swing.Icon;
+import javax.swing.JCheckBox;
 import javax.swing.JPanel;
+import javax.swing.JRadioButton;
 
 import org.cytoscape.app.CyAppAdapter;
 import org.cytoscape.application.swing.CytoPanelComponent;
@@ -43,6 +47,8 @@ public class PetriPanel extends JPanel implements CytoPanelComponent {
 	private CyNetwork petriNet;
 	private PetriUtils petriUtils;
 	private PetriTaskFactory PetriTaskFactory;
+	private boolean firingMode; // Async = false, Sync = true
+	private boolean random;
 
 	/**
 	 * Constructor
@@ -144,15 +150,12 @@ public class PetriPanel extends JPanel implements CytoPanelComponent {
 		top.add(new Label("How often do you want to fire?"));
 		final TextField times = new TextField("1");			// Used to determine how often to fire on button click
 		top.add(times);
-		jPanel.add(top, BorderLayout.PAGE_START);
-		JPanel but = new JPanel();					// Lower panel of jPanel
-		but.setLayout(new GridLayout(0,1));
 		Button fireBut = new Button("Fire Petri Net"); 		// Button for firing the Petri Net
 		fireBut.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				CyNode[] cyTransitionArray = petriUtils.getTransitions();
 				for (int i=0; i<Integer.parseInt(times.getText()); i++) {				// Fire Petri Net x times
-					petriUtils.fire(cyTransitionArray);
+					petriUtils.fire(cyTransitionArray, firingMode, random);
 				}
 				TaskIterator itr = petriUtils.updateView();
 				adapter.getTaskManager().execute(itr);
@@ -160,7 +163,37 @@ public class PetriPanel extends JPanel implements CytoPanelComponent {
 				synTaskMan.execute(itr);
 			}
 		});
-		but.add(fireBut);
+		top.add(fireBut);
+		jPanel.add(top, BorderLayout.PAGE_START);
+		JPanel but = new JPanel();					// Lower panel of jPanel
+		but.setLayout(new GridLayout(0,2));
+		JRadioButton radSync = new JRadioButton("Synchronous firing");
+		radSync.setSelected(true);
+		firingMode = true;
+		radSync.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				firingMode = true;
+			}
+		});
+		JRadioButton radAsync = new JRadioButton("Asynchronous firing");
+		radAsync.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				firingMode = true;
+			}
+		});
+		random = false;
+		JCheckBox rndSel = new JCheckBox("Randomize firing order");
+		rndSel.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				random = !random;
+			}
+		});
+		ButtonGroup frOpt = new ButtonGroup();
+		frOpt.add(radSync);
+		frOpt.add(radAsync);
+		but.add(radSync);
+		but.add(radAsync);
+		but.add(rndSel);
 		jPanel.add(but, BorderLayout.PAGE_END);
 		this.add(jPanel);
 	}

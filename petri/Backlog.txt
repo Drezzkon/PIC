@@ -25,7 +25,8 @@ Milestone3:
 []  Load from KGNL format
 [x] Verify Petri Net Button including Error Messages: why is it invalid
 []  Separate Token Amount from Label
-[]  Implement asynchronous firing
+[x] Implement random firing order
+[x] Implement asynchronous firing
 
 Milestone4:
     Calculation of Invariants
