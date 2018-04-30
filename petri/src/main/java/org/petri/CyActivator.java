@@ -13,6 +13,9 @@ import org.cytoscape.session.CyNetworkNaming;
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.CyNetworkViewManager;
+import org.cytoscape.view.presentation.annotations.AnnotationFactory;
+import org.cytoscape.view.presentation.annotations.AnnotationManager;
+import org.cytoscape.view.presentation.annotations.TextAnnotation;
 import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.work.SynchronousTaskManager;
@@ -45,26 +48,31 @@ public class CyActivator extends AbstractCyActivator {
 		CyAppAdapter adapter = getService(bc, CyAppAdapter.class);
 
 		// Network Management
-		CyNetworkManager cyNetworkManagerServiceRef = getService(bc,CyNetworkManager.class);
-		CyNetworkNaming cyNetworkNamingServiceRef = getService(bc,CyNetworkNaming.class);
-		CyNetworkFactory cyNetworkFactoryServiceRef = getService(bc,CyNetworkFactory.class);
+		CyNetworkManager cyNetworkManagerServiceRef = getService(bc, CyNetworkManager.class);
+		CyNetworkNaming cyNetworkNamingServiceRef = getService(bc, CyNetworkNaming.class);
+		CyNetworkFactory cyNetworkFactoryServiceRef = getService(bc, CyNetworkFactory.class);
 		CyEventHelper eventHelperServiceRef = getService(bc, CyEventHelper.class);
 		
 		// Network View Management
 		CyNetworkViewFactory cyNetworkViewFactoryServiceRef = getService(bc, CyNetworkViewFactory.class);
-		CyNetworkViewManager cyNetworkViewManagerServiceRef = getService(bc,CyNetworkViewManager.class);
+		CyNetworkViewManager cyNetworkViewManagerServiceRef = getService(bc, CyNetworkViewManager.class);
 		CyLayoutAlgorithmManager cyLayoutAlgorithmManagerRef = getService(bc, CyLayoutAlgorithmManager.class);
 		SynchronousTaskManager<?> synchronousTaskManagerRef = getService(bc, SynchronousTaskManager.class);
 		VisualMappingManager visualMappingManagerRef = getService(bc, VisualMappingManager.class);
 		VisualMappingFunctionFactory visualMappingFunctionFactoryRefd = getService(bc, VisualMappingFunctionFactory.class,
 				"(mapping.type=discrete)");
+		
+		// Annotations
+		@SuppressWarnings("unchecked")
+		AnnotationFactory<TextAnnotation> annFacRef = getService(bc, AnnotationFactory.class, "(type=TextAnnotation.class)");
+		AnnotationManager annManRef = getService(bc, AnnotationManager.class);
 
 		// Petri Panel
 		PetriPanel petriPanel = new PetriPanel(cyNetworkManagerServiceRef,
 				cyNetworkNamingServiceRef,cyNetworkFactoryServiceRef,cyNetworkViewFactoryServiceRef,
 				cyNetworkViewManagerServiceRef, eventHelperServiceRef,cyLayoutAlgorithmManagerRef,
 				synchronousTaskManagerRef, visualMappingManagerRef,
-				visualMappingFunctionFactoryRefd, adapter);
+				visualMappingFunctionFactoryRefd, annFacRef, annManRef, adapter);
 		registerService(bc, petriPanel, CytoPanelComponent.class, new Properties());
 	}
 }

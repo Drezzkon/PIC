@@ -2,9 +2,8 @@ package org.petri;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
+import java.io.FileReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.regex.Pattern;
@@ -287,6 +286,7 @@ public class FileUtils {
 	 * @throws Exception
 	 */
 	public void readDAT(CyNetwork petriNet, String content) throws Exception {
+		// TODO Look up how this looks if it has initial tokens and weights -> change accordingly
 		String splitString[] = content.split("\\r?\\n");
 		ArrayList<String> transitions = new ArrayList<String>();
 		ArrayList<String> places = new ArrayList<String>();
@@ -433,7 +433,7 @@ public class FileUtils {
 	 * @throws IOException
 	 */
 	public String getContent() throws IOException {
-		BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(inpFile)));
+		BufferedReader br = new BufferedReader(new FileReader(inpFile));
 		try {
 			StringBuilder sb = new StringBuilder();
 			String line = br.readLine();

@@ -21,6 +21,9 @@ import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.model.View;
+import org.cytoscape.view.presentation.annotations.AnnotationFactory;
+import org.cytoscape.view.presentation.annotations.AnnotationManager;
+import org.cytoscape.view.presentation.annotations.TextAnnotation;
 import org.cytoscape.view.presentation.property.ArrowShapeVisualProperty;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.presentation.property.NodeShapeVisualProperty;
@@ -45,14 +48,18 @@ public class PetriUtils {
 	private CyLayoutAlgorithmManager clam;
 	private CyAppAdapter adapter;
 	private VisualMappingFunctionFactory vmffd;
+	private AnnotationFactory<TextAnnotation> annFac;
+	private AnnotationManager annMan;
 	
 	/**
 	 * Constructor
 	 * @param petriNet
 	 * @param cnvm
+	 * @param annManRef 
+	 * @param annFacRef 
 	 */
 	public PetriUtils(CyNetwork petriNet, CyNetworkViewManager cnvm, CyNetworkViewFactory cnvf, VisualMappingManager vmm,
-			CyLayoutAlgorithmManager clam, CyAppAdapter adapter, VisualMappingFunctionFactory vmffd) {
+			CyLayoutAlgorithmManager clam, CyAppAdapter adapter, VisualMappingFunctionFactory vmffd, AnnotationFactory<TextAnnotation> annFac, AnnotationManager annMan) {
 		this.petriNet = petriNet;
 		this.cnvm = cnvm;
 		this.cnvf = cnvf;
@@ -60,6 +67,8 @@ public class PetriUtils {
 		this.clam = clam;
 		this.adapter = adapter;
 		this.vmffd = vmffd;
+		this.annFac = annFac;
+		this.annMan = annMan;
 	}
 
 	/**
@@ -165,11 +174,11 @@ public class PetriUtils {
 		}
 		
 		for (View<CyNode> v : placeviews) {			// Views for places, label always contains amount of tokens
-		v.setLockedValue(BasicVisualLexicon.NODE_WIDTH, 35.0);
-		v.setLockedValue(BasicVisualLexicon.NODE_FILL_COLOR, Color.RED);
-		v.setLockedValue(BasicVisualLexicon.NODE_LABEL,
-				petriNet.getDefaultNodeTable().getRow(v.getModel().getSUID()).get("name", String.class)+"\n"
-				+ Integer.toString(petriNet.getDefaultNodeTable().getRow(v.getModel().getSUID()).get("tokens", Integer.class)));
+			v.setLockedValue(BasicVisualLexicon.NODE_WIDTH, 35.0);
+			v.setLockedValue(BasicVisualLexicon.NODE_FILL_COLOR, Color.RED);
+			v.setLockedValue(BasicVisualLexicon.NODE_LABEL,
+					petriNet.getDefaultNodeTable().getRow(v.getModel().getSUID()).get("name", String.class)+"\n"
+					+ Integer.toString(petriNet.getDefaultNodeTable().getRow(v.getModel().getSUID()).get("tokens", Integer.class)));
 		}
 		
 		CyLayoutAlgorithm def = clam.getDefaultLayout(); // Apply default layout
@@ -177,6 +186,9 @@ public class PetriUtils {
 		adapter.getTaskManager().execute(itr);
 		SynchronousTaskManager<?> synTaskMan = adapter.getCyServiceRegistrar().getService(SynchronousTaskManager.class);
 		synTaskMan.execute(itr);
+		TaskIterator annotations = updateAnnotations();
+		adapter.getTaskManager().execute(annotations);
+		synTaskMan.execute(annotations);
 		vs.apply(cnv);
 		cnv.updateView();
 	}
@@ -243,9 +255,6 @@ public class PetriUtils {
 		JFrame f = new JFrame("Errors during verification");
 		String msg = errors.toString().replaceAll(",", System.lineSeparator());
 		msg = msg.replace("[", "").replace("]", "");
-		if (msg.equals("")) {
-			msg = "No errors found";
-		}
 		JOptionPane.showMessageDialog(f, msg);
 	}
 	
@@ -284,7 +293,6 @@ public class PetriUtils {
 					petriNet.getDefaultNodeTable().getRow(incomingEdge.getSource().getSUID()).set("tokens", newAmount);
 				}
 				if (!firingMode) {
-					JOptionPane.showMessageDialog(new JFrame(), "firingMode = false");
 					break;
 				}
 			}
@@ -325,6 +333,14 @@ public class PetriUtils {
 	 * Similar to AbstractTaskFactory.CreateTaskIterator
 	 */
 	public TaskIterator updateView() {
-		return new TaskIterator(new ViewUpdaterTask(petriNet, cnvm));
+		return new TaskIterator(new UpdateViewTask(petriNet, cnvm));
+	}
+	
+	/**
+	 * @return TaskIterator for a AnnotationUpdateTask
+	 * Similar to AbstractTaskFactory.CreateTaskIterator
+	 */
+	public TaskIterator updateAnnotations() {
+		return new TaskIterator(new UpdateAnnotationTask(petriNet, annFac, annMan, cnvm));
 	}
 }
