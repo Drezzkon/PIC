@@ -1,7 +1,6 @@
 package org.petri;
 	
 import java.awt.BorderLayout;
-import java.awt.Button;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.GridLayout;
@@ -12,6 +11,7 @@ import java.awt.event.ActionListener;
 
 import javax.swing.ButtonGroup;
 import javax.swing.Icon;
+import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
@@ -82,7 +82,7 @@ public class PetriPanel extends JPanel implements CytoPanelComponent {
 		JPanel top = new JPanel();				// Upper Panel of jPanel
 		top.setLayout(new GridLayout(0,1));
 		top.add(new Label("Control Panel for Petri Net App"));
-		Button createBut = new Button("Create new Petri Net");
+		JButton createBut = new JButton("Create new Petri Net");
 		createBut.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				if (petriNet != null) {						// Destroy previously loaded Petri Net, only one active at a time
@@ -98,7 +98,7 @@ public class PetriPanel extends JPanel implements CytoPanelComponent {
 			}
 		});
 		top.add(createBut);
-		Button viewBut = new Button("Update Views");
+		JButton viewBut = new JButton("Update Views");
 		viewBut.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				TaskIterator itr = petriUtils.updateView();
@@ -108,7 +108,7 @@ public class PetriPanel extends JPanel implements CytoPanelComponent {
 			}
 		});
 		top.add(viewBut);
-		Button loadBut = new Button("Load Petri Net");		// Button for loading new Petri Nets
+		JButton loadBut = new JButton("Load Petri Net");		// Button for loading new Petri Nets
 		loadBut.addActionListener(new ActionListener() {	
 			public void actionPerformed(ActionEvent e) {
 				if (petriNet != null) {						// Destroy previously loaded Petri Net, only one active at a time
@@ -129,14 +129,14 @@ public class PetriPanel extends JPanel implements CytoPanelComponent {
 			}
 		});
 		top.add(loadBut);
-		Button veriBut = new Button("Verify PetriNet");
+		JButton veriBut = new JButton("Verify PetriNet");
 		veriBut.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				petriUtils.verifyNet();
 			}
 		});
 		top.add(veriBut);
-		Button resetBut = new Button("Reset Petri Net");	// Button for resetting tokens and fired
+		JButton resetBut = new JButton("Reset Petri Net");	// Button for resetting tokens and fired
 		resetBut.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				petriUtils.reset();
@@ -150,7 +150,7 @@ public class PetriPanel extends JPanel implements CytoPanelComponent {
 		top.add(new Label("How often do you want to fire?"));
 		final TextField times = new TextField("1");			// Used to determine how often to fire on button click
 		top.add(times);
-		Button fireBut = new Button("Fire Petri Net"); 		// Button for firing the Petri Net
+		JButton fireBut = new JButton("Fire Petri Net"); 		// Button for firing the Petri Net
 		fireBut.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				CyNode[] cyTransitionArray = petriUtils.getTransitions();

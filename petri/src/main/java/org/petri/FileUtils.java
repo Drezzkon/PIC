@@ -2,8 +2,9 @@ package org.petri;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.regex.Pattern;
@@ -433,7 +434,7 @@ public class FileUtils {
 	 * @throws IOException
 	 */
 	public String getContent() throws IOException {
-		BufferedReader br = new BufferedReader(new FileReader(inpFile));
+		BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(inpFile)));
 		try {
 			StringBuilder sb = new StringBuilder();
 			String line = br.readLine();
