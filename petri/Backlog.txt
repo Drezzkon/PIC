@@ -24,7 +24,7 @@ Milestone3:
 [x] Apply View (Button)
 []  Load from KGNL format
 [x] Verify Petri Net Button including Error Messages: why is it invalid
-[]  Separate Token Amount from Label
+[?]  Separate Token Amount from Label
 [x] Implement random firing order
 [x] Implement asynchronous firing
 

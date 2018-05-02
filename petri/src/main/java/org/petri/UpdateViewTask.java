@@ -1,9 +1,6 @@
 package org.petri;
 
 import java.awt.Color;
-import java.util.HashSet;
-import java.util.Set;
-
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.view.model.CyNetworkView;
@@ -45,31 +42,20 @@ public class UpdateViewTask extends AbstractTask {
 		CyNetworkView [] cnvs = new CyNetworkView[1];
 		cnvm.getNetworkViews(petriNet).toArray(cnvs);
 		cnv = cnvs[0];
-		Set <View<CyNode>> placeviews = new HashSet<View<CyNode>>();
-		Set <View<CyNode>> transitionviews = new HashSet<View<CyNode>>();
 		for (View<CyNode> v : cnv.getNodeViews()) {		// Separate views in places and transitions
 			v.setLockedValue(BasicVisualLexicon.NODE_WIDTH, 35.0);
 			String ntype = petriNet.getDefaultNodeTable().getRow(v.getModel().getSUID()).get("type", String.class);
 			if (ntype.equals("Transition")) {
-				transitionviews.add(v);
+				if (petriNet.getDefaultNodeTable().getRow(v.getModel().getSUID()).get("fired", Integer.class) == 1) {
+					v.setLockedValue(BasicVisualLexicon.NODE_FILL_COLOR, Color.GREEN);	// Green if fired
+				}
+				else {
+					v.setLockedValue(BasicVisualLexicon.NODE_FILL_COLOR, Color.WHITE);	// White if not fired
+				}
 			}
 			else {
-				placeviews.add(v);
+				v.setLockedValue(BasicVisualLexicon.NODE_FILL_COLOR, Color.RED);
 			}
-		}
-		for (View<CyNode> v : transitionviews) {
-			if (petriNet.getDefaultNodeTable().getRow(v.getModel().getSUID()).get("fired", Integer.class) == 1) {
-				v.setLockedValue(BasicVisualLexicon.NODE_FILL_COLOR, Color.GREEN);	// Green if fired
-			}
-			else {
-				v.setLockedValue(BasicVisualLexicon.NODE_FILL_COLOR, Color.WHITE);	// White if not fired
-			}
-		}
-		for (View<CyNode> v : placeviews) {
-			v.setLockedValue(BasicVisualLexicon.NODE_FILL_COLOR, Color.RED);
-			v.setLockedValue(BasicVisualLexicon.NODE_LABEL,	// New token amounts
-				petriNet.getDefaultNodeTable().getRow(v.getModel().getSUID()).get("name", String.class)+"\n"
-				+ Integer.toString(petriNet.getDefaultNodeTable().getRow(v.getModel().getSUID()).get("tokens", Integer.class)));
 		}
 		cnv.updateView();
 	}

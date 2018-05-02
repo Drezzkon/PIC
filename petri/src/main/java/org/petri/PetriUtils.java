@@ -177,8 +177,7 @@ public class PetriUtils {
 			v.setLockedValue(BasicVisualLexicon.NODE_WIDTH, 35.0);
 			v.setLockedValue(BasicVisualLexicon.NODE_FILL_COLOR, Color.RED);
 			v.setLockedValue(BasicVisualLexicon.NODE_LABEL,
-					petriNet.getDefaultNodeTable().getRow(v.getModel().getSUID()).get("name", String.class)+"\n"
-					+ Integer.toString(petriNet.getDefaultNodeTable().getRow(v.getModel().getSUID()).get("tokens", Integer.class)));
+					petriNet.getDefaultNodeTable().getRow(v.getModel().getSUID()).get("name", String.class));
 		}
 		
 		CyLayoutAlgorithm def = clam.getDefaultLayout(); // Apply default layout
@@ -186,9 +185,9 @@ public class PetriUtils {
 		adapter.getTaskManager().execute(itr);
 		SynchronousTaskManager<?> synTaskMan = adapter.getCyServiceRegistrar().getService(SynchronousTaskManager.class);
 		synTaskMan.execute(itr);
-		TaskIterator annotations = updateAnnotations();
-		adapter.getTaskManager().execute(annotations);
-		synTaskMan.execute(annotations);
+		//TaskIterator annotations = updateAnnotations();
+		//adapter.getTaskManager().execute(annotations);
+		//synTaskMan.execute(annotations);
 		vs.apply(cnv);
 		cnv.updateView();
 	}

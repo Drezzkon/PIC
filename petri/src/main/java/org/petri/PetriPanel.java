@@ -154,9 +154,9 @@ public class PetriPanel extends JPanel implements CytoPanelComponent {
 				adapter.getTaskManager().execute(itr);
 				SynchronousTaskManager<?> synTaskMan = adapter.getCyServiceRegistrar().getService(SynchronousTaskManager.class);
 				synTaskMan.execute(itr);
-				TaskIterator annotations = petriUtils.updateAnnotations();
-				adapter.getTaskManager().execute(annotations);
-				synTaskMan.execute(annotations);
+				//TaskIterator annotations = petriUtils.updateAnnotations();
+				//adapter.getTaskManager().execute(annotations);
+				//synTaskMan.execute(annotations);
 			}
 		});
 		top.add(resetBut);
@@ -174,6 +174,9 @@ public class PetriPanel extends JPanel implements CytoPanelComponent {
 				adapter.getTaskManager().execute(itr);
 				SynchronousTaskManager<?> synTaskMan = adapter.getCyServiceRegistrar().getService(SynchronousTaskManager.class);
 				synTaskMan.execute(itr);
+				//TaskIterator annotations = petriUtils.updateAnnotations();
+				//adapter.getTaskManager().execute(annotations);
+				//synTaskMan.execute(annotations);
 			}
 		});
 		top.add(fireBut);

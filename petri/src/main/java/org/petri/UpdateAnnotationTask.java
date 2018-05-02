@@ -1,10 +1,7 @@
 package org.petri;
 
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
-
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.view.model.CyNetworkView;
@@ -34,31 +31,26 @@ public class UpdateAnnotationTask extends AbstractTask {
 
 	@Override
 	public void run(TaskMonitor monitor) throws Exception {
-		monitor.setProgress(0.0);
 		CyNetworkView [] cnvs = new CyNetworkView[1];
 		cnvm.getNetworkViews(petriNet).toArray(cnvs);
 		CyNetworkView cnv = cnvs[0];
 		if (annMan.getAnnotations(cnv) != null) {
 			for (Annotation a : annMan.getAnnotations(cnv)) {
-				annMan.removeAnnotation(a);
+				a.removeAnnotation();
 			}
 		}
-		Set <View<CyNode>> placeviews = new HashSet<View<CyNode>>();
 		for (View<CyNode> v : cnv.getNodeViews()) {
 			if (petriNet.getDefaultNodeTable().getRow(v.getModel().getSUID()).get("type", String.class).equals("Place")) {
-				placeviews.add(v);
+				Map <String, String> argMap = new HashMap<String, String>();
+				argMap.put(Annotation.CANVAS, Annotation.FOREGROUND);
+				argMap.put(Annotation.X, Double.toString(v.getVisualProperty(BasicVisualLexicon.NODE_X_LOCATION)));
+				argMap.put(Annotation.Y, Double.toString(v.getVisualProperty(BasicVisualLexicon.NODE_Y_LOCATION)-10.0));
+				argMap.put(Annotation.NAME, petriNet.getDefaultNodeTable().getRow(v.getModel().getSUID()).get("name", String.class));
+				argMap.put(Annotation.ZOOM, "1.0");
+				TextAnnotation ann = annFac.createAnnotation(TextAnnotation.class, cnv, argMap);
+				ann.setText(Integer.toString(petriNet.getDefaultNodeTable().getRow(v.getModel().getSUID()).get("tokens", Integer.class)));
+				annMan.addAnnotation(ann);		
 			}
-		}
-		for (View<CyNode> v : placeviews) {
-			Map <String, String> argMap = new HashMap<String, String>();
-			argMap.put(Annotation.CANVAS, Annotation.FOREGROUND);
-			argMap.put(Annotation.X, Double.toString(v.getVisualProperty(BasicVisualLexicon.NODE_X_LOCATION)));
-			argMap.put(Annotation.Y, Double.toString(v.getVisualProperty(BasicVisualLexicon.NODE_Y_LOCATION)));
-			argMap.put(Annotation.NAME, petriNet.getDefaultNodeTable().getRow(v.getModel().getSUID()).get("name", String.class));
-			argMap.put(Annotation.ZOOM, "1.0");
-			TextAnnotation ann = annFac.createAnnotation(TextAnnotation.class, cnv, argMap);
-			ann.setText(Integer.toString(petriNet.getDefaultNodeTable().getRow(v.getModel().getSUID()).get("tokens", Integer.class)));
-			annMan.addAnnotation(ann);		
 		}
 	}
 }
