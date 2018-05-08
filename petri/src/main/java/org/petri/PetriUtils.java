@@ -316,7 +316,7 @@ public class PetriUtils {
 	 * @param cyPlaceArray
 	 */
 	public void invar(CyNode[] cyTransitionArray, CyNode[] cyPlaceArray) {
-		Integer[][] incidenceMatrix = new Integer[cyTransitionArray.length][cyPlaceArray.length];
+		Integer[][] incidenceMatrix = new Integer[cyTransitionArray.length][cyPlaceArray.length]; 
 		for (Integer m = 0; m < cyTransitionArray.length; m++) {
 			for (Integer n = 0; n < cyPlaceArray.length; n++){
 				incidenceMatrix[m][n] = 0;
@@ -324,18 +324,120 @@ public class PetriUtils {
 				Iterable<CyEdge>outgoingEdges = petriNet.getAdjacentEdgeIterable(cyPlaceArray[n], CyEdge.Type.OUTGOING);
 				for (CyEdge incomingEdge : incomingEdges){
 					if (cyTransitionArray[m].getSUID().equals(incomingEdge.getSource().getSUID())){
-						incidenceMatrix[m][n] = -1;
+						incidenceMatrix[m][n] = 1;
 					}
 				}
 				for (CyEdge outgoingEdge : outgoingEdges){
 					if (cyTransitionArray[m].getSUID().equals(outgoingEdge.getTarget().getSUID())){
-						incidenceMatrix[m][n] = 1;
+						incidenceMatrix[m][n] = -1;
 					}
+				}
+				if (incidenceMatrix[m][n] != 1 && incidenceMatrix[m][n] != -1){
+					incidenceMatrix[m][n] = 0;
 				}
 			}
 		}
+		ArrayList<Integer[]> incMatList = new ArrayList<Integer[]>(Arrays.asList(incidenceMatrix));
+		Integer[][] identity = new Integer[cyTransitionArray.length][cyTransitionArray.length];
+		for (Integer n = 0; n < cyTransitionArray.length; n++){
+			for (Integer n2 = 0; n2 < cyTransitionArray.length; n2++){
+				if (n.equals(n2)){
+					identity[n][n2] = 1;
+				}
+				else {
+					identity[n][n2] = 0;
+				}
+			}
+		}
+		ArrayList<Integer[]> identList = new ArrayList<Integer[]>(Arrays.asList(identity));
+		for (Integer p = cyPlaceArray.length - 1; p > -1; p--){
+			ArrayList<Integer> posPositions = new ArrayList<Integer>();
+			ArrayList<Integer> negPositions = new ArrayList<Integer>();
+			for (Integer t = 0; t < incMatList.size(); t++){
+				if (incMatList.get(t)[p].equals(1)){
+					posPositions.add(t);
+				} else if (incMatList.get(t)[p].equals(-1)){
+					negPositions.add(t);
+				}
+			}
+			ArrayList<Integer[]> newLines = new ArrayList<Integer[]>();
+			ArrayList<Integer[]> newIdentLines = new ArrayList<Integer[]>();
+			for (Integer pos = 0; pos<posPositions.size(); pos++){
+				for (Integer neg = 0; neg<negPositions.size(); neg++){
+					Integer[] newLine = new Integer[cyPlaceArray.length];
+					Integer[] newIdentLine = new Integer[cyTransitionArray.length];
+					for (Integer place=0; place<cyPlaceArray.length; place++){
+						newLine[place] = incMatList.get(posPositions.get(pos))[place] + incMatList.get(negPositions.get(neg))[place];
+					}
+					for (Integer transition=0; transition<cyTransitionArray.length; transition++){
+						newIdentLine[transition] = identList.get(posPositions.get(pos))[transition] + identList.get(negPositions.get(neg))[transition];
+					}
+					newLines.add(newLine);
+					newIdentLines.add(newIdentLine);
+				}
+			}
+			for (Integer pos = 0; pos<posPositions.size(); pos++){
+				incMatList.remove(posPositions.get(pos));
+				identList.remove(posPositions.get(pos));
+			}
+			for (Integer neg = 0; neg<negPositions.size(); neg++){
+				incMatList.remove(negPositions.get(neg));
+				identList.remove(negPositions.get(neg));
+			}
+		}
+		ArrayList<Integer[]> invariants = new ArrayList<Integer[]>();
+		for (Integer m = 0; m<incMatList.size(); m++){
+			Boolean isZero = true;
+			for (Integer n = 0; n< cyPlaceArray.length; n++){
+				if(incMatList.get(m)[n] != 0){
+					isZero = false;
+					break;
+				}
+			}
+			if (isZero) {
+				invariants.add(identList.get(m));
+			}
+		}
+		JFrame f = new JFrame("Errors during verification");
+		String msg = invariants.toString();
+		JOptionPane.showMessageDialog(f, msg);
+		/*
+		Integer k = 0;
+		Integer l = 0;
+		while ((k < cyPlaceArray.length) && (l < cyTransitionArray.length)){
+			if (incidenceMatrix[k][l] != 0){
+				for (Integer i = k+1; i<cyPlaceArray.length; i++){
+					if (incidenceMatrix[k][l] * incidenceMatrix[i][l] < 0){
+						for (Integer j=0; j< cyPlaceArray.length; j++){
+							incidenceMatrix[j][i] = incidenceMatrix[j][i] * incidenceMatrix[k][l] + incidenceMatrix[k][i] * incidenceMatrix[j][l];
+							identity[j][i] = identity[j][i] * incidenceMatrix[k][l] + identity[k][i] * incidenceMatrix[j][l];
+						}
+					} else if (incidenceMatrix[k][l] * incidenceMatrix[i][l] > 0){
+						for (Integer j=0; j< cyPlaceArray.length; j++){
+							incidenceMatrix[j][i] = incidenceMatrix[j][i] * incidenceMatrix[k][l] - incidenceMatrix[k][i] * incidenceMatrix[j][l];
+							identity[j][i] = identity[j][i] * incidenceMatrix[k][l] - identity[k][i] * incidenceMatrix[j][l];
+						}
+					}
+				}
+				k++;
+				l++;
+			}
+			else{
+				boolean zeros = true;
+				for(Integer x = l; x<cyTransitionArray.length; x++){
+					if (incidenceMatrix[k][x] != 0){
+						zeros = false;
+					}
+				}
+				if (zeros){
+					
+				}
+				else{
+					l++;
+				}
+			}
+		}*/
 	}
-
 	public void applyInvars(Integer[][] invars) {
 		CyNetworkView [] cnvs = new CyNetworkView[1];
 		cnvm.getNetworkViews(petriNet).toArray(cnvs);
