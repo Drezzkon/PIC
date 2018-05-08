@@ -131,15 +131,20 @@ public class PetriUtils {
 		CyNode[] cyTransitionArray = getTransitions();
 		CyNetworkView cnv = cnvf.createNetworkView(petriNet);		// Setting up view
 		Set <View<CyNode>> nodeviews = new HashSet<View<CyNode>>();	// Used for layout
-		Set <View<CyNode>> placeviews = new HashSet<View<CyNode>>();
-		Set <View<CyNode>> transitionviews = new HashSet<View<CyNode>>();
-		for (int i = 0; i<cyPlaceArray.length; i++) {
+		for (int i = 0; i<cyPlaceArray.length; i++) {	// Views for places, always red, token amount in label
 			View<CyNode> nodeview = cnv.getNodeView(cyPlaceArray[i]);
-			placeviews.add(nodeview);
+			nodeview.setLockedValue(BasicVisualLexicon.NODE_WIDTH, 35.0);
+			nodeview.setLockedValue(BasicVisualLexicon.NODE_FILL_COLOR, Color.RED);
+			nodeview.setLockedValue(BasicVisualLexicon.NODE_LABEL,
+					petriNet.getDefaultNodeTable().getRow(nodeview.getModel().getSUID()).get("name", String.class)+"\n"
+					+ Integer.toString(petriNet.getDefaultNodeTable().getRow(nodeview.getModel().getSUID()).get("tokens", Integer.class)));
+			nodeviews.add(nodeview);
 		}
-		for (int i=0; i<cyTransitionArray.length; i++) {
+		for (int i=0; i<cyTransitionArray.length; i++) { // Views for transitions, always white, since not fired yet
 			View<CyNode> nodeview = cnv.getNodeView(cyTransitionArray[i]);
-			transitionviews.add(nodeview);
+			nodeview.setLockedValue(BasicVisualLexicon.NODE_WIDTH, 35.0);
+			nodeview.setLockedValue(BasicVisualLexicon.NODE_FILL_COLOR, Color.WHITE);
+			nodeviews.add(nodeview);
 		}
 		CyEdge [] cyEdgeArray = new CyEdge[petriNet.getEdgeCount()];		//Generate views for edges
 		petriNet.getEdgeList().toArray(cyEdgeArray);
@@ -147,8 +152,6 @@ public class PetriUtils {
 			View<CyEdge> edgeview = cnv.getEdgeView(cyEdgeArray[i]);
 			edgeview.setLockedValue(BasicVisualLexicon.EDGE_TARGET_ARROW_SHAPE, ArrowShapeVisualProperty.ARROW);
 		}
-		nodeviews.addAll(transitionviews);
-		nodeviews.addAll(placeviews);
 		cnvm.addNetworkView(cnv);
 		
 		VisualStyle vs = vmm.getVisualStyle(cnv);
@@ -159,19 +162,6 @@ public class PetriUtils {
 		shapeMap.putMapValue("Place", NodeShapeVisualProperty.ELLIPSE);
 		vs.addVisualMappingFunction(shapeMap);
 		
-		for (View<CyNode> v : transitionviews) {	// Views for transitions, always white on startup
-			v.setLockedValue(BasicVisualLexicon.NODE_WIDTH, 35.0);
-			v.setLockedValue(BasicVisualLexicon.NODE_FILL_COLOR, Color.WHITE);
-		}
-		
-		for (View<CyNode> v : placeviews) {			// Views for places, label always contains amount of tokens
-		v.setLockedValue(BasicVisualLexicon.NODE_WIDTH, 35.0);
-		v.setLockedValue(BasicVisualLexicon.NODE_FILL_COLOR, Color.RED);
-		v.setLockedValue(BasicVisualLexicon.NODE_LABEL,
-				petriNet.getDefaultNodeTable().getRow(v.getModel().getSUID()).get("name", String.class)+"\n"
-				+ Integer.toString(petriNet.getDefaultNodeTable().getRow(v.getModel().getSUID()).get("tokens", Integer.class)));
-		}
-		
 		CyLayoutAlgorithm def = clam.getDefaultLayout(); // Apply default layout
 		TaskIterator itr = def.createTaskIterator(cnv, def.getDefaultLayoutContext(), nodeviews, null);
 		adapter.getTaskManager().execute(itr);
@@ -180,7 +170,7 @@ public class PetriUtils {
 		vs.apply(cnv);
 		cnv.updateView();
 	}
-	
+
 	/**
 	 * Verify correctness of Petri Net
 	 */
@@ -256,9 +246,6 @@ public class PetriUtils {
 	 * @param firingMode - synchronous (true) or asynchronous (false) firing
 	 */
 	public void fire(CyNode[] cyTransitionArray, boolean firingMode, boolean random) {
-		for (CyNode n : cyTransitionArray) {									
-			petriNet.getDefaultNodeTable().getRow(n.getSUID()).set("fired", 0);	// Reset which transitions were fired
-		}
 		if (random) {
 			List <CyNode> transitions = Arrays.asList(cyTransitionArray);
 			Collections.shuffle(transitions);
@@ -270,7 +257,7 @@ public class PetriUtils {
 			boolean fireable = true;
 			for (CyEdge incomingEdge: incomingEdges){
 				if (petriNet.getDefaultNodeTable().getRow(incomingEdge.getSource().getSUID()).get("tokens", Integer.class) < petriNet.getDefaultEdgeTable().getRow(incomingEdge.getSUID()).get("weight", Integer.class)){
-					fireable = false; // Transition can't be fired, if the source of an incoming edge does not have enough tokens
+					fireable = false; // Transition can't be fired if the source of an incoming edge does not have enough tokens
 					break;
 				}
 			}
@@ -284,7 +271,6 @@ public class PetriUtils {
 					petriNet.getDefaultNodeTable().getRow(incomingEdge.getSource().getSUID()).set("tokens", newAmount);
 				}
 				if (!firingMode) {
-					JOptionPane.showMessageDialog(new JFrame(), "firingMode = false");
 					break;
 				}
 			}
@@ -300,10 +286,12 @@ public class PetriUtils {
 		}
 		for (int i = 0; i<cyTransitionArray.length; i++){
 			if (fireableTransitions.contains(cyTransitionArray[i])){	// Updates, which transitions have fired
-				//int sofar = petriNet.getDefaultNodeTable().getRow(cyTransitionArray[i].getSUID()).get("fired", Integer.class);
 				petriNet.getDefaultNodeTable().getRow(cyTransitionArray[i].getSUID()).set("fired", 1);
 			}
-		}
+			else {
+				petriNet.getDefaultNodeTable().getRow(cyTransitionArray[i].getSUID()).set("fired", 0);	// Reset which transitions were fired
+			}
+		}	
 	}
 	
 	/**
@@ -317,6 +305,32 @@ public class PetriUtils {
 		CyNode[] cyPlaceArray = getPlaces();
 		for (CyNode n : cyPlaceArray) {
 			petriNet.getDefaultNodeTable().getRow(n.getSUID()).set("tokens", petriNet.getDefaultNodeTable().getRow(n.getSUID()).get("initial tokens", Integer.class));
+		}
+	}
+	
+	/**
+	 * Calculates invariants of Petri Net
+	 * @param cyTransitionArray
+	 * @param cyPlaceArray
+	 */
+	public void invar(CyNode[] cyTransitionArray, CyNode[] cyPlaceArray) {
+		Integer[][] incidenceMatrix = new Integer[cyTransitionArray.length][cyPlaceArray.length];
+		for (Integer m = 0; m < cyTransitionArray.length; m++) {
+			for (Integer n = 0; n < cyPlaceArray.length; n++){
+				incidenceMatrix[m][n] = 0;
+				Iterable<CyEdge>incomingEdges = petriNet.getAdjacentEdgeIterable(cyPlaceArray[n], CyEdge.Type.INCOMING);
+				Iterable<CyEdge>outgoingEdges = petriNet.getAdjacentEdgeIterable(cyPlaceArray[n], CyEdge.Type.OUTGOING);
+				for (CyEdge incomingEdge : incomingEdges){
+					if (cyTransitionArray[m].getSUID().equals(incomingEdge.getSource().getSUID())){
+						incidenceMatrix[m][n] = -1;
+					}
+				}
+				for (CyEdge outgoingEdge : outgoingEdges){
+					if (cyTransitionArray[m].getSUID().equals(outgoingEdge.getTarget().getSUID())){
+						incidenceMatrix[m][n] = 1;
+					}
+				}
+			}
 		}
 	}
 

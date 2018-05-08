@@ -147,6 +147,19 @@ public class PetriPanel extends JPanel implements CytoPanelComponent {
 			}
 		});
 		top.add(resetBut);
+		JButton invarBut = new JButton("Calculate Invariants");	// Button for calculating invariants
+		invarBut.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				CyNode[] cyTransitionArray = petriUtils.getTransitions();
+				CyNode[] cyPlaceArray = petriUtils.getPlaces();
+				petriUtils.invar(cyTransitionArray, cyPlaceArray);
+				TaskIterator itr = petriUtils.updateView();
+				adapter.getTaskManager().execute(itr);
+				SynchronousTaskManager<?> synTaskMan = adapter.getCyServiceRegistrar().getService(SynchronousTaskManager.class);
+				synTaskMan.execute(itr);
+			}
+		});
+		top.add(invarBut);
 		top.add(new Label("How often do you want to fire?"));
 		final TextField times = new TextField("1");			// Used to determine how often to fire on button click
 		top.add(times);

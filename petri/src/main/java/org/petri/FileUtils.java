@@ -50,16 +50,13 @@ public class FileUtils {
 	/**
 	 * Loads Petri Net from SBML format.
 	 * @param petriNet - Network to be used to represent Petri Net
+	 * @param doc - XML-Document used to extract information
 	 * @throws Exception - Errors during loading, incorrect format
 	 */
-	public void readXML(CyNetwork petriNet) throws Exception {
-		DocumentBuilderFactory docBuilderFactory = DocumentBuilderFactory.newInstance();
-		DocumentBuilder docBuilder = docBuilderFactory.newDocumentBuilder();
-		Document doc = docBuilder.parse(inpFile);
+	public void readSBML(CyNetwork petriNet, Document doc) throws Exception {
 		//Generating Nodes for Places
 		NodeList listOfPlaces = doc.getElementsByTagName("species");
 		CyNode [] cyPlaceArray = new CyNode[listOfPlaces.getLength()];
-		int maxAmount = 0;
 		for (int i = 0; i<listOfPlaces.getLength(); i++) {
 			cyPlaceArray[i] = petriNet.addNode();
 			Element element = (Element) listOfPlaces.item(i);
@@ -72,9 +69,6 @@ public class FileUtils {
 			}
 			else {
 				petriNet.getDefaultNodeTable().getRow(cyPlaceArray[i].getSUID()).set("name", element.getAttribute("id"));
-			}
-			if (Integer.parseInt(element.getAttribute("initialAmount"))> maxAmount) {
-				maxAmount = Integer.parseInt(element.getAttribute("initialAmount"));
 			}
 		}
 		NodeList listOfTransitions = doc.getElementsByTagName("reaction");
@@ -92,13 +86,13 @@ public class FileUtils {
 				petriNet.getDefaultNodeTable().getRow(cyTransitionArray[i].getSUID()).set("name", element.getAttribute("name"));
 			}
 			else {
-				petriNet.getDefaultNodeTable().getRow(cyTransitionArray[i].getSUID()).set("name", element.getAttribute("id"));
+				petriNet.getDefaultNodeTable().getRow(cyTransitionArray[i].getSUID()).set("name", id);
 			}
 			NodeList children = element.getChildNodes();
 			
 			for (int index = 0; index<children.getLength(); index++) {
 				String nname = children.item(index).getNodeName();
-				if (nname.equals("listOfReactants")) {
+				if (nname.equals("listOfReactants")) { // Outgoing edges
 					NodeList reactants = children.item(index).getChildNodes();
 					for (int reactIndex = 0; reactIndex<reactants.getLength(); reactIndex++) {
 						if (reactants.item(reactIndex).getNodeType() == Node.ELEMENT_NODE) {
@@ -115,7 +109,7 @@ public class FileUtils {
 						}
 					}
 				}
-				else if (nname.equals("listOfProducts")) {
+				else if (nname.equals("listOfProducts")) { // Incoming edges
 					NodeList products = children.item(index).getChildNodes();
 					for (int prodIndex = 0; prodIndex<products.getLength(); prodIndex++) {
 						if (products.item(prodIndex).getNodeType() == Node.ELEMENT_NODE) {
@@ -136,6 +130,66 @@ public class FileUtils {
 		}
 	}
 
+	/**
+	 * Loads Petri Net from KGML format.
+	 * @param petriNet - Network to be used to represent Petri Net
+	 * @param doc - XML-Document used to extract information
+	 * @throws Exception - Errors during loading, incorrect format
+	 */
+	public void readKGML(CyNetwork petriNet, Document doc) throws Exception {
+		NodeList listOfPlaces = doc.getElementsByTagName("entry");
+		CyNode[] cyPlaceArray = new CyNode[listOfPlaces.getLength()];
+		for (int i=0; i<listOfPlaces.getLength(); i++) {
+			cyPlaceArray[i] = petriNet.addNode();
+			Element place = (Element) listOfPlaces.item(i);
+			petriNet.getDefaultNodeTable().getRow(cyPlaceArray[i].getSUID()).set("id", "e"+ place.getAttribute("id"));
+			petriNet.getDefaultNodeTable().getRow(cyPlaceArray[i].getSUID()).set("name", place.getAttribute("name"));
+			petriNet.getDefaultNodeTable().getRow(cyPlaceArray[i].getSUID()).set("type", "Place");
+			petriNet.getDefaultNodeTable().getRow(cyPlaceArray[i].getSUID()).set("initial tokens", 0);
+			petriNet.getDefaultNodeTable().getRow(cyPlaceArray[i].getSUID()).set("tokens", 0);
+		}
+		NodeList listOfTransitions = doc.getElementsByTagName("reaction");
+		CyNode[] cyTransitionArray = new CyNode[listOfTransitions.getLength()];
+		for (int i=0; i<listOfTransitions.getLength(); i++) {
+			cyTransitionArray[i] = petriNet.addNode();
+			Element trans = (Element) listOfTransitions.item(i);
+			petriNet.getDefaultNodeTable().getRow(cyTransitionArray[i].getSUID()).set("id", "r" + trans.getAttribute("id"));
+			petriNet.getDefaultNodeTable().getRow(cyTransitionArray[i].getSUID()).set("name", trans.getAttribute("name"));
+			petriNet.getDefaultNodeTable().getRow(cyTransitionArray[i].getSUID()).set("type", "Transition");
+			petriNet.getDefaultNodeTable().getRow(cyTransitionArray[i].getSUID()).set("fired", 0);
+			NodeList reactands = trans.getElementsByTagName("substrate");
+			for (int index=0; index<reactands.getLength(); index++) {
+				Element react = (Element) reactands.item(index);
+				String id = "e" + react.getAttribute("id");
+				CyNode source = null;
+				for (CyNode n : cyPlaceArray) {
+					if (petriNet.getDefaultNodeTable().getRow(n.getSUID()).get("id", String.class).equals(id)) {
+						source = n;
+					}
+				}
+				CyEdge e = petriNet.addEdge(source, cyTransitionArray[i], true);
+				petriNet.getDefaultEdgeTable().getRow(e.getSUID()).set("weight", 1);
+				petriNet.getDefaultEdgeTable().getRow(e.getSUID()).set("name", react.getAttribute("name") + "->"
+						+ trans.getAttribute("name"));
+			}
+			NodeList products = trans.getElementsByTagName("product");
+			for (int index=0; index<products.getLength(); index++) {
+				Element product = (Element) products.item(index);
+				String id = "e" + product.getAttribute("id");
+				CyNode target = null;
+				for (CyNode n: cyPlaceArray) {
+					if (petriNet.getDefaultNodeTable().getRow(n.getSUID()).get("id", String.class).equals(id)) {
+						target = n;
+					}
+				}
+				CyEdge e = petriNet.addEdge(cyTransitionArray[i], target, true);
+				petriNet.getDefaultEdgeTable().getRow(e.getSUID()).set("weight", 1);
+				petriNet.getDefaultEdgeTable().getRow(e.getSUID()).set("name", trans.getAttribute("name") + "->"
+						+ product.getAttribute("name"));
+			}
+		}
+	}
+	
 	/**
 	 * Loads Petri Net from PNT format.
 	 * @param petriNet - Network to be used to represent Petri Net
@@ -287,7 +341,6 @@ public class FileUtils {
 	 * @throws Exception
 	 */
 	public void readDAT(CyNetwork petriNet, String content) throws Exception {
-		// TODO Look up how this looks if it has initial tokens and weights -> change accordingly
 		String splitString[] = content.split("\\r?\\n");
 		ArrayList<String> transitions = new ArrayList<String>();
 		ArrayList<String> places = new ArrayList<String>();
@@ -460,7 +513,16 @@ public class FileUtils {
 	 */
 	public void choose(String ext, CyNetwork petriNet) throws Exception {
 		if (ext.equals("xml")) {
-			readXML(petriNet);
+			DocumentBuilderFactory docBuilderFactory = DocumentBuilderFactory.newInstance();
+			DocumentBuilder docBuilder = docBuilderFactory.newDocumentBuilder();
+			Document doc = docBuilder.parse(inpFile);
+			NodeList sbml = doc.getElementsByTagName("sbml");
+			if (sbml.getLength() == 0) {
+				readKGML(petriNet, doc);
+			}
+			else {
+				readSBML(petriNet, doc);
+			}
 		}
 		else {
 			String content = getContent();
