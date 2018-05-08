@@ -60,6 +60,7 @@ public class FileUtils {
 		for (int i = 0; i<listOfPlaces.getLength(); i++) {
 			cyPlaceArray[i] = petriNet.addNode();
 			Element element = (Element) listOfPlaces.item(i);
+			petriNet.getDefaultNodeTable().getRow(cyPlaceArray[i].getSUID()).set("internal id", "p"+Integer.toString(i));
 			petriNet.getDefaultNodeTable().getRow(cyPlaceArray[i].getSUID()).set("id", element.getAttribute("id"));
 			petriNet.getDefaultNodeTable().getRow(cyPlaceArray[i].getSUID()).set("tokens", Integer.parseInt(element.getAttribute("initialAmount")));
 			petriNet.getDefaultNodeTable().getRow(cyPlaceArray[i].getSUID()).set("initial tokens", Integer.parseInt(element.getAttribute("initialAmount")));
@@ -79,6 +80,7 @@ public class FileUtils {
 			cyTransitionArray[i] = petriNet.addNode();
 			Element element = (Element) listOfTransitions.item(i);
 			String id =  element.getAttribute("id");
+			petriNet.getDefaultNodeTable().getRow(cyTransitionArray[i].getSUID()).set("internal id", "t"+Integer.toString(i));
 			petriNet.getDefaultNodeTable().getRow(cyTransitionArray[i].getSUID()).set("id", id);
 			petriNet.getDefaultNodeTable().getRow(cyTransitionArray[i].getSUID()).set("type", "Transition");
 			petriNet.getDefaultNodeTable().getRow(cyTransitionArray[i].getSUID()).set("fired", 0);
@@ -102,6 +104,7 @@ public class FileUtils {
 									cyEdgeArray[numOfEdges] = petriNet.addEdge(cyPlaceArray[placeIndex], cyTransitionArray[i], true);
 									petriNet.getDefaultEdgeTable().getRow(cyEdgeArray[numOfEdges].getSUID()).set("weight", Integer.parseInt(reactant.getAttribute("stoichiometry")));
 									petriNet.getDefaultEdgeTable().getRow(cyEdgeArray[numOfEdges].getSUID()).set("name", reactant.getAttribute("species")+"->"+id);
+									petriNet.getDefaultEdgeTable().getRow(cyEdgeArray[numOfEdges].getSUID()).set("internal id", "e"+Integer.toString(numOfEdges));
 									numOfEdges++;
 									break;
 								}
@@ -119,6 +122,7 @@ public class FileUtils {
 									cyEdgeArray[numOfEdges] = petriNet.addEdge(cyTransitionArray[i], cyPlaceArray[placeIndex], true);
 									petriNet.getDefaultEdgeTable().getRow(cyEdgeArray[numOfEdges].getSUID()).set("weight", Integer.parseInt(product.getAttribute("stoichiometry")));
 									petriNet.getDefaultEdgeTable().getRow(cyEdgeArray[numOfEdges].getSUID()).set("name", id+"->"+product.getAttribute("species"));
+									petriNet.getDefaultEdgeTable().getRow(cyEdgeArray[numOfEdges].getSUID()).set("internal id", "e"+Integer.toString(numOfEdges));
 									numOfEdges++;
 									break;
 								}
@@ -142,6 +146,7 @@ public class FileUtils {
 		for (int i=0; i<listOfPlaces.getLength(); i++) {
 			cyPlaceArray[i] = petriNet.addNode();
 			Element place = (Element) listOfPlaces.item(i);
+			petriNet.getDefaultNodeTable().getRow(cyPlaceArray[i].getSUID()).set("internal id", "p"+Integer.toString(i));
 			petriNet.getDefaultNodeTable().getRow(cyPlaceArray[i].getSUID()).set("id", "e"+ place.getAttribute("id"));
 			petriNet.getDefaultNodeTable().getRow(cyPlaceArray[i].getSUID()).set("name", place.getAttribute("name"));
 			petriNet.getDefaultNodeTable().getRow(cyPlaceArray[i].getSUID()).set("type", "Place");
@@ -150,9 +155,11 @@ public class FileUtils {
 		}
 		NodeList listOfTransitions = doc.getElementsByTagName("reaction");
 		CyNode[] cyTransitionArray = new CyNode[listOfTransitions.getLength()];
+		int numOfEdges = 0;
 		for (int i=0; i<listOfTransitions.getLength(); i++) {
 			cyTransitionArray[i] = petriNet.addNode();
 			Element trans = (Element) listOfTransitions.item(i);
+			petriNet.getDefaultNodeTable().getRow(cyTransitionArray[i].getSUID()).set("internal id", "t"+Integer.toString(i));
 			petriNet.getDefaultNodeTable().getRow(cyTransitionArray[i].getSUID()).set("id", "r" + trans.getAttribute("id"));
 			petriNet.getDefaultNodeTable().getRow(cyTransitionArray[i].getSUID()).set("name", trans.getAttribute("name"));
 			petriNet.getDefaultNodeTable().getRow(cyTransitionArray[i].getSUID()).set("type", "Transition");
@@ -171,6 +178,8 @@ public class FileUtils {
 				petriNet.getDefaultEdgeTable().getRow(e.getSUID()).set("weight", 1);
 				petriNet.getDefaultEdgeTable().getRow(e.getSUID()).set("name", react.getAttribute("name") + "->"
 						+ trans.getAttribute("name"));
+				petriNet.getDefaultEdgeTable().getRow(e.getSUID()).set("internal id", "e"+Integer.toString(numOfEdges));
+				numOfEdges++;
 			}
 			NodeList products = trans.getElementsByTagName("product");
 			for (int index=0; index<products.getLength(); index++) {
@@ -186,6 +195,8 @@ public class FileUtils {
 				petriNet.getDefaultEdgeTable().getRow(e.getSUID()).set("weight", 1);
 				petriNet.getDefaultEdgeTable().getRow(e.getSUID()).set("name", trans.getAttribute("name") + "->"
 						+ product.getAttribute("name"));
+				petriNet.getDefaultEdgeTable().getRow(e.getSUID()).set("internal id", "e"+Integer.toString(numOfEdges));
+				numOfEdges++;
 			}
 		}
 	}
@@ -204,7 +215,7 @@ public class FileUtils {
 		for (int i = 2; i<placesSplit.length; i++){
 			cyPlaceArray[i - 2] = petriNet.addNode();
 			String placeSplit[] = placesSplit[i].split("\\s+");
-			petriNet.getDefaultNodeTable().getRow(cyPlaceArray[i - 2].getSUID()).set("id", "p" + Integer.toString(i - 2));
+			petriNet.getDefaultNodeTable().getRow(cyPlaceArray[i - 2].getSUID()).set("internal id", "p" + Integer.toString(i - 2));
 			petriNet.getDefaultNodeTable().getRow(cyPlaceArray[i - 2].getSUID()).set("name", placeSplit[2]);
 			petriNet.getDefaultNodeTable().getRow(cyPlaceArray[i - 2].getSUID()).set("tokens", 0);
 			petriNet.getDefaultNodeTable().getRow(cyPlaceArray[i - 2].getSUID()).set("initial tokens", 0);
@@ -215,7 +226,7 @@ public class FileUtils {
 		for (int i = 2; i<transitionsSplit.length; i++){
 			cyTransitionArray[i - 2] = petriNet.addNode();
 			String transitionSplit[] = transitionsSplit[i].split("\\s+");
-			petriNet.getDefaultNodeTable().getRow(cyTransitionArray[i - 2].getSUID()).set("id","t" + Integer.toString(i - 2));
+			petriNet.getDefaultNodeTable().getRow(cyTransitionArray[i - 2].getSUID()).set("internal id","t" + Integer.toString(i - 2));
 			petriNet.getDefaultNodeTable().getRow(cyTransitionArray[i - 2].getSUID()).set("name", transitionSplit[2]);
 			petriNet.getDefaultNodeTable().getRow(cyTransitionArray[i - 2].getSUID()).set("type", "Transition");
 			petriNet.getDefaultNodeTable().getRow(cyTransitionArray[i - 2].getSUID()).set("fired", 0);
@@ -232,9 +243,12 @@ public class FileUtils {
 				edges.add(petriNet.addEdge(cyPlaceArray[i - 1], cyTransitionArray[Integer.parseInt(outgoingEdges[x])], true));
 			}
 		}
+		int numOfEdges = 0;
 		for (CyEdge e : edges){
 			petriNet.getDefaultEdgeTable().getRow(e.getSUID()).set("name", petriNet.getDefaultNodeTable().getRow(e.getSource().getSUID()).get("name", String.class)+"->"+petriNet.getDefaultNodeTable().getRow(e.getTarget().getSUID()).get("name", String.class));
 			petriNet.getDefaultEdgeTable().getRow(e.getSUID()).set("weight", 0);
+			petriNet.getDefaultEdgeTable().getRow(e.getSUID()).set("internal id", "e"+Integer.toString(numOfEdges));
+			numOfEdges++;
 		}
 	}
 
@@ -249,6 +263,7 @@ public class FileUtils {
 		ArrayList<CyNode> places = new ArrayList<CyNode>();
 		ArrayList<CyNode> transitions = new ArrayList<CyNode>();
 		String sep = "\\";
+		int p = 0, t = 0, e = 0;	// number of places, transitions, edges
 		for (String currLine : splitString) {
 			String lineSplit[] = currLine.split(Pattern.quote(sep));
 			if (lineSplit.length == 1) {
@@ -258,6 +273,8 @@ public class FileUtils {
 				CyNode place = petriNet.addNode();
 				places.add(place);
 				petriNet.getDefaultNodeTable().getRow(place.getSUID()).set("type", "Place");
+				petriNet.getDefaultNodeTable().getRow(place.getSUID()).set("internal id", "p"+Integer.toString(p));
+				p++;
 				for (String split : lineSplit) {
 					if (split.length() == 0) {
 						continue;
@@ -283,6 +300,8 @@ public class FileUtils {
 				transitions.add(trans);
 				petriNet.getDefaultNodeTable().getRow(trans.getSUID()).set("type", "Transition");
 				petriNet.getDefaultNodeTable().getRow(trans.getSUID()).set("fired", 0);
+				petriNet.getDefaultNodeTable().getRow(trans.getSUID()).set("internal id", "t"+Integer.toString(t));
+				t++;
 				for (String split : lineSplit) {
 					if (split.length() == 0) {
 						continue;
@@ -322,6 +341,8 @@ public class FileUtils {
 				pos1 = lineSplit[1].indexOf("{");
 				pos2 = lineSplit[1].indexOf("}");
 				petriNet.getDefaultEdgeTable().getRow(arc.getSUID()).set("name", lineSplit[1].substring(pos1+1, pos2));
+				petriNet.getDefaultEdgeTable().getRow(arc.getSUID()).set("internal id", "e"+Integer.toString(e));
+				e++;
 				for (int i = 4; i < lineSplit.length; i++) {
 					if (lineSplit[i].contains("weight")){
 						pos1 = lineSplit[i].indexOf("{");
@@ -355,6 +376,7 @@ public class FileUtils {
 					petriNet.getDefaultNodeTable().getRow(cyTransitionArray[y].getSUID()).set("name", transitions.get(y));
 					petriNet.getDefaultNodeTable().getRow(cyTransitionArray[y].getSUID()).set("type", "Transition");
 					petriNet.getDefaultNodeTable().getRow(cyTransitionArray[y].getSUID()).set("fired", 0);
+					petriNet.getDefaultNodeTable().getRow(cyTransitionArray[y].getSUID()).set("internal id", "t"+Integer.toString(y));
 				}
 			}
 			else if (splitString[i].equals("-METINT")){
@@ -367,6 +389,8 @@ public class FileUtils {
 					petriNet.getDefaultNodeTable().getRow(cyPlaceArray[y].getSUID()).set("tokens", 0);
 					petriNet.getDefaultNodeTable().getRow(cyPlaceArray[y].getSUID()).set("initial tokens", 0);
 					petriNet.getDefaultNodeTable().getRow(cyPlaceArray[y].getSUID()).set("type", "Place");
+					petriNet.getDefaultNodeTable().getRow(cyPlaceArray[y].getSUID()).set("internal id", "p"+Integer.toString(y));
+
 				}
 			}
 			else if (splitString[i].equals("-CAT")){
@@ -396,6 +420,7 @@ public class FileUtils {
 							cyEdgeArray[numOfEdges] = petriNet.addEdge(place, trans, true);
 							petriNet.getDefaultEdgeTable().getRow(cyEdgeArray[numOfEdges].getSUID()).set("weight", 0);
 							petriNet.getDefaultEdgeTable().getRow(cyEdgeArray[numOfEdges].getSUID()).set("name", lineSplit[z]+"->"+currentTransition);
+							petriNet.getDefaultEdgeTable().getRow(cyEdgeArray[numOfEdges].getSUID()).set("internal id", "e"+Integer.toString(numOfEdges));
 							numOfEdges++;
 						}
 						else if (currentPosition.equals("right") && !lineSplit[z].equals(":") && !lineSplit[z].equals("=")
@@ -410,6 +435,7 @@ public class FileUtils {
 							cyEdgeArray[numOfEdges] = petriNet.addEdge(trans, place, true);
 							petriNet.getDefaultEdgeTable().getRow(cyEdgeArray[numOfEdges].getSUID()).set("weight", 0);
 							petriNet.getDefaultEdgeTable().getRow(cyEdgeArray[numOfEdges].getSUID()).set("name", currentTransition+"->"+lineSplit[z]);
+							petriNet.getDefaultEdgeTable().getRow(cyEdgeArray[numOfEdges].getSUID()).set("internal id", "e"+Integer.toString(numOfEdges));
 							numOfEdges++;
 						}
 						if (lineSplit[z].equals(":")){
@@ -433,6 +459,7 @@ public class FileUtils {
 		String splitString[] = content.split("\\r?\\n");
 		ArrayList<CyNode> transitions = new ArrayList<CyNode>();
 		ArrayList<CyEdge> edges = new ArrayList<CyEdge>();
+		int p = 0;
 		for (String currLine : splitString) {
 			String lineSplit[] = currLine.split("\\s+");
 			String name = lineSplit[0].substring(0, lineSplit[0].length()-2);
@@ -442,6 +469,8 @@ public class FileUtils {
 			petriNet.getDefaultNodeTable().getRow(transitions.get(transitions.size()-1).getSUID()).set("name", name);
 			petriNet.getDefaultNodeTable().getRow(transitions.get(transitions.size()-1).getSUID()).set("type", "Transition");
 			petriNet.getDefaultNodeTable().getRow(transitions.get(transitions.size()-1).getSUID()).set("fired", 0);
+			petriNet.getDefaultNodeTable().getRow(transitions.get(transitions.size()-1).getSUID()).set("internal id", "t"+Integer.toString(transitions.size()-1));
+
 			for (int i=1; i<lineSplit.length; i++ ) {
 				if (lineSplit[i].equals("->")) {
 					dir = "out";
@@ -465,16 +494,20 @@ public class FileUtils {
 						petriNet.getDefaultNodeTable().getRow(place.getSUID()).set("initial tokens", 0);
 						petriNet.getDefaultNodeTable().getRow(place.getSUID()).set("tokens", 0);
 						petriNet.getDefaultNodeTable().getRow(place.getSUID()).set("type", "Place");
+						petriNet.getDefaultNodeTable().getRow(place.getSUID()).set("internal id", "p"+Integer.toString(p));
+						p++;
 					}
 					if (dir.equals("in")) {
 						edges.add(petriNet.addEdge(place, transitions.get(transitions.size()-1), true));
 						petriNet.getDefaultEdgeTable().getRow(edges.get(edges.size()-1).getSUID()).set("weight", 1);
 						petriNet.getDefaultEdgeTable().getRow(edges.get(edges.size()-1).getSUID()).set("name", lineSplit[i]+"->"+lineSplit[0]);
+						petriNet.getDefaultEdgeTable().getRow(edges.get(edges.size()-1).getSUID()).set("internal id", "e"+Integer.toString(edges.size()-1));
 					}
 					else if (dir.equals("out")) {
 						edges.add(petriNet.addEdge(transitions.get(transitions.size()-1), place, true));
 						petriNet.getDefaultEdgeTable().getRow(edges.get(edges.size()-1).getSUID()).set("weight", 1);
 						petriNet.getDefaultEdgeTable().getRow(edges.get(edges.size()-1).getSUID()).set("name", lineSplit[0]+"->"+lineSplit[i]);
+						petriNet.getDefaultEdgeTable().getRow(edges.get(edges.size()-1).getSUID()).set("internal id", "e"+Integer.toString(edges.size()-1));
 					}
 				}
 			}

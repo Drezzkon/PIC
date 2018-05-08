@@ -114,11 +114,13 @@ public class PetriUtils {
 	 * Initializes Columns when creating a new Petri Net
 	 */
 	public void initializeColumns() {
+		petriNet.getDefaultNodeTable().createColumn("internal id", String.class, true);
 		petriNet.getDefaultNodeTable().createColumn("id", String.class, true);
 		petriNet.getDefaultNodeTable().createColumn("tokens", Integer.class, false);
 		petriNet.getDefaultNodeTable().createColumn("initial tokens", Integer.class, true);
 		petriNet.getDefaultNodeTable().createColumn("type", String.class, true);
 		petriNet.getDefaultNodeTable().createColumn("fired", Integer.class, false);
+		petriNet.getDefaultEdgeTable().createColumn("internal id", String.class, true);
 		petriNet.getDefaultEdgeTable().createColumn("weight", Integer.class, true);
 	}
 	
@@ -334,6 +336,16 @@ public class PetriUtils {
 		}
 	}
 
+	public void applyInvars(Integer[][] invars) {
+		CyNetworkView [] cnvs = new CyNetworkView[1];
+		cnvm.getNetworkViews(petriNet).toArray(cnvs);
+		CyNetworkView cnv = cnvs[0];
+		Set <View<CyEdge>> edgeviews = new HashSet <View<CyEdge>> ();
+		edgeviews.addAll(cnv.getEdgeViews());
+		//apply color to all edges of transitions covered by t-invariants?
+		//what if transitions are part of more than one invariant?
+	}
+	
 	/**
 	 * @return TaskIterator for a ViewUpdaterTask
 	 * Similar to AbstractTaskFactory.CreateTaskIterator
