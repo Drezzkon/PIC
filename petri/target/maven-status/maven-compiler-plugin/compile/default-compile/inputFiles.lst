@@ -1,7 +1,10 @@
-C:\Users\Marcel\eclipse-workspace\petri\petri\src\main\java\org\petri\ViewUpdaterTask.java
-C:\Users\Marcel\eclipse-workspace\petri\petri\src\main\java\org\petri\FileUtils.java
-C:\Users\Marcel\eclipse-workspace\petri\petri\src\main\java\org\petri\PetriPanel.java
-C:\Users\Marcel\eclipse-workspace\petri\petri\src\main\java\org\petri\PetriUtils.java
-C:\Users\Marcel\eclipse-workspace\petri\petri\src\main\java\org\petri\CyActivator.java
-C:\Users\Marcel\eclipse-workspace\petri\petri\src\main\java\org\petri\PetriTask.java
-C:\Users\Marcel\eclipse-workspace\petri\petri\src\main\java\org\petri\PetriTaskFactory.java
+C:\Users\Szarash\eclipse-workspace\maven.1525862370190\petri\src\main\java\org\petri\CyActivator.java
+C:\Users\Szarash\eclipse-workspace\maven.1525862370190\petri\src\main\java\org\petri\PetriTaskFactory.java
+C:\Users\Szarash\eclipse-workspace\maven.1525862370190\petri\src\main\java\org\petri\FileUtils.java
+C:\Users\Szarash\eclipse-workspace\maven.1525862370190\petri\src\main\java\org\petri\ViewUpdaterTask.java
+C:\Users\Szarash\eclipse-workspace\maven.1525862370190\petri\src\main\java\org\petri\CreateEdgeTask.java
+C:\Users\Szarash\eclipse-workspace\maven.1525862370190\petri\src\main\java\org\petri\CreatePlaceTask.java
+C:\Users\Szarash\eclipse-workspace\maven.1525862370190\petri\src\main\java\org\petri\CreateTransitionTask.java
+C:\Users\Szarash\eclipse-workspace\maven.1525862370190\petri\src\main\java\org\petri\PetriPanel.java
+C:\Users\Szarash\eclipse-workspace\maven.1525862370190\petri\src\main\java\org\petri\PetriTask.java
+C:\Users\Szarash\eclipse-workspace\maven.1525862370190\petri\src\main\java\org\petri\PetriUtils.java

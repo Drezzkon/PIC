@@ -22,15 +22,16 @@ Milestone2:
 Milestone3:
 [x] Create new Petri Net (Button)
 [x] Apply View (Button)
-[]  Load from KGNL format
+[?]  Load from KGNL format
 [x] Verify Petri Net Button including Error Messages: why is it invalid
-[]  Separate Token Amount from Label
+[-]  Separate Token Amount from Label
 [x] Implement random firing order
 [x] Implement asynchronous firing
 
 Milestone4:
-    Calculation of Invariants
+[x] Calculation of Invariants
     Color Mapping based on Invariants
+    Optimize Runtimes
 
 Misc.
 

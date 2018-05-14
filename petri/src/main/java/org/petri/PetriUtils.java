@@ -45,6 +45,7 @@ public class PetriUtils {
 	private CyLayoutAlgorithmManager clam;
 	private CyAppAdapter adapter;
 	private VisualMappingFunctionFactory vmffd;
+	private int e, p, t;
 	
 	/**
 	 * Constructor
@@ -60,6 +61,9 @@ public class PetriUtils {
 		this.clam = clam;
 		this.adapter = adapter;
 		this.vmffd = vmffd;
+		this.e = 0;
+		this.p = 0;
+		this.t = 0;
 	}
 
 	/**
@@ -332,9 +336,6 @@ public class PetriUtils {
 						incidenceMatrix[m][n] = -1;
 					}
 				}
-				if (incidenceMatrix[m][n] != 1 && incidenceMatrix[m][n] != -1){
-					incidenceMatrix[m][n] = 0;
-				}
 			}
 		}
 		ArrayList<Integer[]> incMatList = new ArrayList<Integer[]>(Arrays.asList(incidenceMatrix));
@@ -376,14 +377,16 @@ public class PetriUtils {
 					newIdentLines.add(newIdentLine);
 				}
 			}
-			for (Integer pos = 0; pos<posPositions.size(); pos++){
-				incMatList.remove(posPositions.get(pos));
-				identList.remove(posPositions.get(pos));
+			ArrayList<Integer> positionsToDelete = new ArrayList<Integer>();
+			positionsToDelete.addAll(negPositions);
+			positionsToDelete.addAll(posPositions);
+			Collections.sort(positionsToDelete, Collections.reverseOrder());
+			for (int pos: positionsToDelete){
+				incMatList.remove(pos);
+				identList.remove(pos);
 			}
-			for (Integer neg = 0; neg<negPositions.size(); neg++){
-				incMatList.remove(negPositions.get(neg));
-				identList.remove(negPositions.get(neg));
-			}
+			incMatList.addAll(newLines);
+			identList.addAll(newIdentLines);
 		}
 		ArrayList<Integer[]> invariants = new ArrayList<Integer[]>();
 		for (Integer m = 0; m<incMatList.size(); m++){
@@ -398,9 +401,17 @@ public class PetriUtils {
 				invariants.add(identList.get(m));
 			}
 		}
-		JFrame f = new JFrame("Errors during verification");
-		String msg = invariants.toString();
-		JOptionPane.showMessageDialog(f, msg);
+		for(Integer[] invariant: invariants){
+			String empty = "";
+			Integer current = invariant.length - 1;
+			for (Integer i : invariant){
+				empty += "t" + current.toString() + ": "+ i.toString() + "; ";
+				current--;
+			}
+			JFrame f = new JFrame("Errors during verification");
+			String msg = empty.toString();
+			JOptionPane.showMessageDialog(f, msg);
+		}
 		/*
 		Integer k = 0;
 		Integer l = 0;
@@ -454,5 +465,20 @@ public class PetriUtils {
 	 */
 	public TaskIterator updateView() {
 		return new TaskIterator(new ViewUpdaterTask(petriNet, cnvm));
+	}
+
+	public TaskIterator createTransition() {
+		this.t++;
+		return new TaskIterator(new CreateTransitionTask(petriNet, this.t-1));
+	}
+
+	public TaskIterator createPlace() {
+		this.p++;
+		return new TaskIterator(new CreatePlaceTask(petriNet, this.p-1));
+	}
+
+	public TaskIterator createEdge() {
+		this.e++;
+		return new TaskIterator(new CreateEdgeTask(petriNet, this.e-1));
 	}
 }

@@ -98,6 +98,36 @@ public class PetriPanel extends JPanel implements CytoPanelComponent {
 			}
 		});
 		top.add(createBut);
+		JButton placeBut = new JButton("Create new place");
+		placeBut.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+			TaskIterator itr = petriUtils.createPlace();
+			adapter.getTaskManager().execute(itr);
+			SynchronousTaskManager<?> synTaskMan = adapter.getCyServiceRegistrar().getService(SynchronousTaskManager.class);
+			synTaskMan.execute(itr);
+			}
+		});
+		top.add(placeBut);
+		JButton transBut = new JButton("Create new transition");
+		transBut.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+			TaskIterator itr = petriUtils.createTransition();
+			adapter.getTaskManager().execute(itr);
+			SynchronousTaskManager<?> synTaskMan = adapter.getCyServiceRegistrar().getService(SynchronousTaskManager.class);
+			synTaskMan.execute(itr);
+			}
+		});
+		top.add(transBut);
+		JButton edgeBut = new JButton("Create new edge");
+		edgeBut.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+			TaskIterator itr = petriUtils.createEdge();
+			adapter.getTaskManager().execute(itr);
+			SynchronousTaskManager<?> synTaskMan = adapter.getCyServiceRegistrar().getService(SynchronousTaskManager.class);
+			synTaskMan.execute(itr);
+			}
+		});
+		top.add(edgeBut);
 		JButton viewBut = new JButton("Update Views");
 		viewBut.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
