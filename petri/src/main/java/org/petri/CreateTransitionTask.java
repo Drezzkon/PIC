@@ -19,8 +19,8 @@ public class CreateTransitionTask extends AbstractTask {
 	}
 
 	public void run(TaskMonitor taskMonitor) throws Exception {
-		if (name == null) {
-			//TODO ERROR MESSAGES HERE
+		if (name.equals("")) {
+			//TODO ERROR MESSAGES HERE FOR EMPTY TUNABLES
 			return;
 		}
 		CyNode transition = petriNet.addNode();

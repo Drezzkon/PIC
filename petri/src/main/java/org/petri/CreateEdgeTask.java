@@ -15,7 +15,7 @@ public class CreateEdgeTask extends AbstractTask {
 	@Tunable(description="Internal ID of Target Node", groups="Nodes")
 	public String targetID;
 	@Tunable(description="Weight of Edge", groups="Weight")
-	public int weight;
+	public String weight;
 	private int id;
 	
 	
@@ -25,10 +25,11 @@ public class CreateEdgeTask extends AbstractTask {
 	}
 
 	public void run(TaskMonitor taskMonitor) throws Exception {
-		if (sourceID == null || targetID == null || weight < 1) {
-			//TODO ERROR MESSAGES HERE
+		if (sourceID.equals("") || targetID.equals("") || weight.equals("")) {
+			//TODO ERROR MESSAGES HERE FOR EMPTY TUNABLES
 			return;
 		}
+		// TODO CHECK FOR NON-INT AND NEGATIVE WEIGHTS
 		CyNode source = null;
 		CyNode target = null;
 		for (CyNode n : petriNet.getNodeList()) {
@@ -39,14 +40,18 @@ public class CreateEdgeTask extends AbstractTask {
 				target = n;
 			}
 		}
+		if (source == null || target == null) {
+			// TODO ERROR MESSAGE HERE FOR WRONG ID
+			return;
+		}
 		if (petriNet.getDefaultNodeTable().getRow(source.getSUID()).get("type", String.class).equals(
 				petriNet.getDefaultNodeTable().getRow(target.getSUID()).get("type", String.class))) {
-			//TODO  get some error message
+			//TODO  ERROR MESSAGE HERE FOR SAME TYPE
 			return;
 		}
 		CyEdge edge = petriNet.addEdge(source, target, true);
 		petriNet.getDefaultEdgeTable().getRow(edge.getSUID()).set("internal id", "e"+Integer.toString(id));
-		petriNet.getDefaultEdgeTable().getRow(edge.getSUID()).set("weight", weight);
+		petriNet.getDefaultEdgeTable().getRow(edge.getSUID()).set("weight", Integer.parseInt(weight));
 		String sourcename = petriNet.getDefaultNodeTable().getRow(source.getSUID()).get("name", String.class);
 		String targetname = petriNet.getDefaultNodeTable().getRow(target.getSUID()).get("name", String.class);
 		petriNet.getDefaultEdgeTable().getRow(edge.getSUID()).set("name", sourcename+"->"+targetname);		
