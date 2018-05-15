@@ -45,6 +45,7 @@ public class PetriUtils {
 	private CyLayoutAlgorithmManager clam;
 	private CyAppAdapter adapter;
 	private VisualMappingFunctionFactory vmffd;
+	protected ArrayList<Integer[]> invars;
 	
 	/**
 	 * Constructor
@@ -311,11 +312,13 @@ public class PetriUtils {
 	}
 	
 	/**
-	 * Calculates invariants of Petri Net
+	 * Calculates invariants of Petri Net.
+	 * The transitions are represented within the array in REVERSE ORDER.
 	 * @param cyTransitionArray
 	 * @param cyPlaceArray
+	 * @return 
 	 */
-	public void invar(CyNode[] cyTransitionArray, CyNode[] cyPlaceArray) {
+	public ArrayList<Integer[]> invar(CyNode[] cyTransitionArray, CyNode[] cyPlaceArray) {
 		Integer[][] incidenceMatrix = new Integer[cyTransitionArray.length][cyPlaceArray.length]; 
 		for (Integer m = 0; m < cyTransitionArray.length; m++) {
 			for (Integer n = 0; n < cyPlaceArray.length; n++){
@@ -397,7 +400,7 @@ public class PetriUtils {
 				invariants.add(identList.get(m));
 			}
 		}
-		for(Integer[] invariant: invariants){
+		/*for(Integer[] invariant: invariants){
 			String empty = "";
 			Integer current = invariant.length - 1;
 			for (Integer i : invariant){
@@ -407,7 +410,8 @@ public class PetriUtils {
 			JFrame f = new JFrame("Errors during verification");
 			String msg = empty.toString();
 			JOptionPane.showMessageDialog(f, msg);
-		}
+		}	*/ // Testing purposes
+		return invariants;
 		/*
 		Integer k = 0;
 		Integer l = 0;
@@ -445,7 +449,8 @@ public class PetriUtils {
 			}
 		}*/
 	}
-	public void applyInvars(Integer[][] invars) {
+	
+	public void applyInvars(Integer[][] invars) { // probably change this completely to menubox thingy support
 		CyNetworkView [] cnvs = new CyNetworkView[1];
 		cnvm.getNetworkViews(petriNet).toArray(cnvs);
 		CyNetworkView cnv = cnvs[0];
@@ -463,14 +468,26 @@ public class PetriUtils {
 		return new TaskIterator(new ViewUpdaterTask(petriNet, cnvm));
 	}
 
+	/**
+	 * @return TaskIterator for a CreateTransitionTask
+	 * Similar to AbstractTaskFactory.CreateTaskIterator
+	 */
 	public TaskIterator createTransition() {
 		return new TaskIterator(new CreateTransitionTask(petriNet));
 	}
 
+	/**
+	 * @return TaskIterator for a CreatePlaceTask
+	 * Similar to AbstractTaskFactory.CreateTaskIterator
+	 */
 	public TaskIterator createPlace() {
 		return new TaskIterator(new CreatePlaceTask(petriNet));
 	}
 
+	/**
+	 * @return TaskIterator for a CreateEdgeTask
+	 * Similar to AbstractTaskFactory.CreateTaskIterator
+	 */
 	public TaskIterator createEdge() {
 		return new TaskIterator(new CreateEdgeTask(petriNet));
 	}

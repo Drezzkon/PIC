@@ -8,11 +8,13 @@ import java.awt.Label;
 import java.awt.TextField;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
 
 import javax.swing.ButtonGroup;
 import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 
@@ -20,14 +22,18 @@ import org.cytoscape.app.CyAppAdapter;
 import org.cytoscape.application.swing.CytoPanelComponent;
 import org.cytoscape.application.swing.CytoPanelName;
 import org.cytoscape.event.CyEventHelper;
+import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.session.CyNetworkNaming;
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
+import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.CyNetworkViewManager;
+import org.cytoscape.view.model.View;
+import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.work.SynchronousTaskManager;
@@ -177,12 +183,62 @@ public class PetriPanel extends JPanel implements CytoPanelComponent {
 			}
 		});
 		top.add(resetBut);
+		final JComboBox<String> invarHolder = new JComboBox<String>();
+		invarHolder.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				Integer[] invar = petriUtils.invars.get(invarHolder.getSelectedIndex());
+				CyNetworkView [] cnvs = new CyNetworkView[1];
+				cyNetworkViewManagerServiceRef.getNetworkViews(petriNet).toArray(cnvs);
+				CyNetworkView cnv = cnvs[0];
+				for (View <CyEdge> edgeview : cnv.getEdgeViews()){
+					edgeview.clearValueLock(BasicVisualLexicon.EDGE_PAINT);
+				}
+				for (int i=1; i<=invar.length; i++) {
+					if(invar[invar.length-i] == 1) {
+						CyNode trans = null;
+						for (CyNode n : petriNet.getNodeList()) {
+							if (petriNet.getDefaultNodeTable().getRow(n.getSUID()).get("internal id", String.class).equals("t"+Integer.toString(i-1))) {
+								trans = n;
+								break;
+							}
+						}
+						Iterable<CyEdge>edges = petriNet.getAdjacentEdgeIterable(trans, CyEdge.Type.DIRECTED);
+						for (CyEdge edge :edges) {
+							View<CyEdge> edgeview = cnv.getEdgeView(edge);
+							edgeview.setLockedValue(BasicVisualLexicon.EDGE_PAINT, Color.CYAN);
+						}
+					}
+				}
+			}
+		});
 		JButton invarBut = new JButton("Calculate Invariants");	// Button for calculating invariants
 		invarBut.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				CyNode[] cyTransitionArray = petriUtils.getTransitions();
 				CyNode[] cyPlaceArray = petriUtils.getPlaces();
-				petriUtils.invar(cyTransitionArray, cyPlaceArray);
+				ArrayList<Integer[]> invars = petriUtils.invar(cyTransitionArray, cyPlaceArray);
+				petriUtils.invars = invars;
+				for (int index=0; index<invars.size(); index++) {
+					Integer[] invar = invars.get(index);
+					String empty = "";
+					Integer current = 0;
+					for (int i=1; i<=invar.length; i++) {
+						if (invar[invar.length-i] == 1) {
+							String name = "";
+							for (CyNode n : petriNet.getNodeList()) {
+								if (petriNet.getDefaultNodeTable().getRow(n.getSUID()).get("internal id", String.class).equals("t"+current.toString())) {
+									name = petriNet.getDefaultNodeTable().getRow(n.getSUID()).get("name", String.class);
+									break;
+								}
+							}
+							empty += name + ", ";
+						}
+						//if (invar[invar.length-i] == 1) empty += "t"+current.toString()+";";
+						// empty += "t" + current.toString() + ": "+ invar[invar.length-i].toString() + "; ";
+						current++;
+					}
+					invarHolder.addItem(empty.substring(0, empty.lastIndexOf(",")));
+				}
 				TaskIterator itr = petriUtils.updateView();
 				adapter.getTaskManager().execute(itr);
 				SynchronousTaskManager<?> synTaskMan = adapter.getCyServiceRegistrar().getService(SynchronousTaskManager.class);
@@ -207,9 +263,11 @@ public class PetriPanel extends JPanel implements CytoPanelComponent {
 			}
 		});
 		top.add(fireBut);
+		top.add(invarHolder);
 		jPanel.add(top, BorderLayout.PAGE_START);
-		JPanel but = new JPanel();					// Lower panel of jPanel
-		but.setLayout(new GridLayout(0,2));
+		
+		JPanel bot = new JPanel();					// Lower panel of jPanel
+		bot.setLayout(new GridLayout(0,2));
 		JRadioButton radSync = new JRadioButton("Synchronous firing");
 		firingMode = false;
 		radSync.addActionListener(new ActionListener() {
@@ -234,10 +292,10 @@ public class PetriPanel extends JPanel implements CytoPanelComponent {
 		ButtonGroup frOpt = new ButtonGroup();
 		frOpt.add(radSync);
 		frOpt.add(radAsync);
-		but.add(radSync);
-		but.add(radAsync);
-		but.add(rndSel);
-		jPanel.add(but, BorderLayout.PAGE_END);
+		bot.add(radSync);
+		bot.add(radAsync);
+		bot.add(rndSel);
+		jPanel.add(bot, BorderLayout.PAGE_END);
 		this.add(jPanel);
 	}
 
