@@ -45,7 +45,6 @@ public class PetriUtils {
 	private CyLayoutAlgorithmManager clam;
 	private CyAppAdapter adapter;
 	private VisualMappingFunctionFactory vmffd;
-	private int e, p, t;
 	
 	/**
 	 * Constructor
@@ -61,9 +60,6 @@ public class PetriUtils {
 		this.clam = clam;
 		this.adapter = adapter;
 		this.vmffd = vmffd;
-		this.e = 0;
-		this.p = 0;
-		this.t = 0;
 	}
 
 	/**
@@ -468,17 +464,14 @@ public class PetriUtils {
 	}
 
 	public TaskIterator createTransition() {
-		this.t++;
-		return new TaskIterator(new CreateTransitionTask(petriNet, this.t-1));
+		return new TaskIterator(new CreateTransitionTask(petriNet));
 	}
 
 	public TaskIterator createPlace() {
-		this.p++;
-		return new TaskIterator(new CreatePlaceTask(petriNet, this.p-1));
+		return new TaskIterator(new CreatePlaceTask(petriNet));
 	}
 
 	public TaskIterator createEdge() {
-		this.e++;
-		return new TaskIterator(new CreateEdgeTask(petriNet, this.e-1));
+		return new TaskIterator(new CreateEdgeTask(petriNet));
 	}
 }

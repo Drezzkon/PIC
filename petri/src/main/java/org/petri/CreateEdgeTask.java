@@ -1,5 +1,10 @@
 package org.petri;
 
+import java.util.Scanner;
+
+import javax.swing.JFrame;
+import javax.swing.JOptionPane;
+
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
@@ -16,20 +21,35 @@ public class CreateEdgeTask extends AbstractTask {
 	public String targetID;
 	@Tunable(description="Weight of Edge", groups="Weight")
 	public String weight;
-	private int id;
 	
 	
-	public CreateEdgeTask(CyNetwork petriNet, int id) {
+	public CreateEdgeTask(CyNetwork petriNet) {
 		this.petriNet = petriNet;
-		this.id = id;
 	}
 
 	public void run(TaskMonitor taskMonitor) throws Exception {
 		if (sourceID.equals("") || targetID.equals("") || weight.equals("")) {
-			//TODO ERROR MESSAGES HERE FOR EMPTY TUNABLES
+			JFrame f = new JFrame("Error during edge creation");
+			String msg = "Missing input values";
+			JOptionPane.showMessageDialog(f, msg);
 			return;
 		}
-		// TODO CHECK FOR NON-INT AND NEGATIVE WEIGHTS
+		boolean invalidWeight;
+	    Scanner sc = new Scanner(weight.trim());
+	    if(!sc.hasNextInt(10)) {
+	    	invalidWeight = true;
+	    }
+	    else {
+	    sc.nextInt(10);
+	    invalidWeight = sc.hasNext();
+	    }
+	    sc.close();
+		if (invalidWeight || Integer.parseInt(weight) < 1) {
+			JFrame f = new JFrame("Error during edge creation");
+			String msg = "Invalid weight";
+			JOptionPane.showMessageDialog(f, msg);
+			return;
+		}
 		CyNode source = null;
 		CyNode target = null;
 		for (CyNode n : petriNet.getNodeList()) {
@@ -41,16 +61,20 @@ public class CreateEdgeTask extends AbstractTask {
 			}
 		}
 		if (source == null || target == null) {
-			// TODO ERROR MESSAGE HERE FOR WRONG ID
+			JFrame f = new JFrame("Error during edge creation");
+			String msg = "Source or Target not found";
+			JOptionPane.showMessageDialog(f, msg);
 			return;
 		}
 		if (petriNet.getDefaultNodeTable().getRow(source.getSUID()).get("type", String.class).equals(
 				petriNet.getDefaultNodeTable().getRow(target.getSUID()).get("type", String.class))) {
-			//TODO  ERROR MESSAGE HERE FOR SAME TYPE
+			JFrame f = new JFrame("Error during edge creation");
+			String msg = "Source and Target have same type";
+			JOptionPane.showMessageDialog(f, msg);
 			return;
 		}
 		CyEdge edge = petriNet.addEdge(source, target, true);
-		petriNet.getDefaultEdgeTable().getRow(edge.getSUID()).set("internal id", "e"+Integer.toString(id));
+		petriNet.getDefaultEdgeTable().getRow(edge.getSUID()).set("internal id", "e"+Integer.toString(petriNet.getEdgeCount()-1));
 		petriNet.getDefaultEdgeTable().getRow(edge.getSUID()).set("weight", Integer.parseInt(weight));
 		String sourcename = petriNet.getDefaultNodeTable().getRow(source.getSUID()).get("name", String.class);
 		String targetname = petriNet.getDefaultNodeTable().getRow(target.getSUID()).get("name", String.class);
