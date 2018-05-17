@@ -464,8 +464,12 @@ public class PetriUtils {
 			cti[i] = 0;
 		}
 		for (Integer[] invar : invars) {
+			Integer[] revInvar = new Integer[invar.length];
+			for (int i=1; i<=invar.length; i++) {
+				revInvar[invar.length-i] = invar[i-1];
+			}
 			for (int i=0; i<invar.length; i++) {
-				if (invar[i]>0) {
+				if (revInvar[i]>0) {
 					cti[i] = 1;
 				}
 			}
@@ -487,12 +491,12 @@ public class PetriUtils {
 			for (Integer trans : not_cti) {
 				CyNode node = null;
 				for (CyNode n : petriNet.getNodeList()) {
-					if (petriNet.getDefaultNodeTable().getRow(n.getSUID()).get("internal id", String.class).equals("t"+Integer.toString(trans-1))) {
+					if (petriNet.getDefaultNodeTable().getRow(n.getSUID()).get("internal id", String.class).equals("t"+Integer.toString(trans))) {
 						node = n;
 						break;
 					}
 				}
-				msg += petriNet.getDefaultNodeTable().getRow(node.getSUID()).get("name", String.class);
+				msg += petriNet.getDefaultNodeTable().getRow(node.getSUID()).get("name", String.class) + "\n";
 			}
 			JOptionPane.showMessageDialog(f, msg);
 		}
