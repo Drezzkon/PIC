@@ -95,6 +95,7 @@ public class PetriPanel extends JPanel implements CytoPanelComponent {
 		createBut.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				if (petriNet != null) {						// Destroy previously loaded Petri Net, only one active at a time
+					invarHolder.removeAllItems();
 					cyNetworkManagerServiceRef.destroyNetwork(petriNet);
 				}
 				petriNet = cyNetworkFactoryServiceRef.createNetwork();	// New Network for Petri Net
@@ -151,6 +152,7 @@ public class PetriPanel extends JPanel implements CytoPanelComponent {
 		loadBut.addActionListener(new ActionListener() {	
 			public void actionPerformed(ActionEvent e) {
 				if (petriNet != null) {						// Destroy previously loaded Petri Net, only one active at a time
+					invarHolder.removeAllItems();
 					cyNetworkManagerServiceRef.destroyNetwork(petriNet);
 				}
 				petriNet = cyNetworkFactoryServiceRef.createNetwork();	// New Network for Petri Net
@@ -188,6 +190,9 @@ public class PetriPanel extends JPanel implements CytoPanelComponent {
 		top.add(resetBut);
 		invarHolder.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
+				if (invarHolder.getItemCount() == 0) {
+					return;
+				}
 				Integer[] invar = petriUtils.invars.get(invarHolder.getSelectedIndex());
 				CyNetworkView [] cnvs = new CyNetworkView[1];
 				cyNetworkViewManagerServiceRef.getNetworkViews(petriNet).toArray(cnvs);
@@ -221,6 +226,7 @@ public class PetriPanel extends JPanel implements CytoPanelComponent {
 				if (choice != JOptionPane.YES_OPTION) {
 					return;
 				}
+				invarHolder.removeAllItems();
 				CyNode[] cyTransitionArray = petriUtils.getTransitions();
 				CyNode[] cyPlaceArray = petriUtils.getPlaces();
 				ArrayList<Integer[]> invars = petriUtils.invar(cyTransitionArray, cyPlaceArray);
