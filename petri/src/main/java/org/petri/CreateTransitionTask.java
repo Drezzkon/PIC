@@ -1,10 +1,16 @@
 package org.petri;
 
+import java.awt.Color;
+
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
+import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.CyNetworkViewManager;
+import org.cytoscape.view.model.View;
+import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
@@ -12,11 +18,13 @@ import org.cytoscape.work.Tunable;
 public class CreateTransitionTask extends AbstractTask {
 	
 	private CyNetwork petriNet;
+	private CyNetworkViewManager cnvm;
 	@Tunable(description="Name of new Transition")
 	public String name;
 
-	public CreateTransitionTask(CyNetwork petriNet) {
+	public CreateTransitionTask(CyNetwork petriNet, CyNetworkViewManager cnvm) {
 		this.petriNet = petriNet;
+		this.cnvm = cnvm;
 	}
 
 	public void run(TaskMonitor taskMonitor) throws Exception {
@@ -38,5 +46,12 @@ public class CreateTransitionTask extends AbstractTask {
 		petriNet.getDefaultNodeTable().getRow(transition.getSUID()).set("type", "Transition");
 		petriNet.getDefaultNodeTable().getRow(transition.getSUID()).set("name", name);
 		petriNet.getDefaultNodeTable().getRow(transition.getSUID()).set("fired", 0);
+		CyNetworkView [] cnvs = new CyNetworkView[1];
+		cnvm.getNetworkViews(petriNet).toArray(cnvs);
+		CyNetworkView cnv = cnvs[0];
+		cnv.updateView();
+		View <CyNode> view = cnv.getNodeView(transition);
+		view.setLockedValue(BasicVisualLexicon.NODE_FILL_COLOR, Color.WHITE);
+		view.setLockedValue(BasicVisualLexicon.NODE_WIDTH, 35.0);
 	}
 }

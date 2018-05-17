@@ -8,6 +8,11 @@ import javax.swing.JOptionPane;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
+import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.CyNetworkViewManager;
+import org.cytoscape.view.model.View;
+import org.cytoscape.view.presentation.property.ArrowShapeVisualProperty;
+import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
@@ -15,6 +20,7 @@ import org.cytoscape.work.Tunable;
 public class CreateEdgeTask extends AbstractTask {
 	
 	private CyNetwork petriNet;
+	private CyNetworkViewManager cnvm;
 	@Tunable(description="Internal ID of Source Node", groups="Nodes")
 	public String sourceID;
 	@Tunable(description="Internal ID of Target Node", groups="Nodes")
@@ -23,8 +29,9 @@ public class CreateEdgeTask extends AbstractTask {
 	public String weight;
 	
 	
-	public CreateEdgeTask(CyNetwork petriNet) {
+	public CreateEdgeTask(CyNetwork petriNet, CyNetworkViewManager cnvm) {
 		this.petriNet = petriNet;
+		this.cnvm = cnvm;
 	}
 
 	public void run(TaskMonitor taskMonitor) throws Exception {
@@ -78,6 +85,12 @@ public class CreateEdgeTask extends AbstractTask {
 		petriNet.getDefaultEdgeTable().getRow(edge.getSUID()).set("weight", Integer.parseInt(weight));
 		String sourcename = petriNet.getDefaultNodeTable().getRow(source.getSUID()).get("name", String.class);
 		String targetname = petriNet.getDefaultNodeTable().getRow(target.getSUID()).get("name", String.class);
-		petriNet.getDefaultEdgeTable().getRow(edge.getSUID()).set("name", sourcename+"->"+targetname);		
+		petriNet.getDefaultEdgeTable().getRow(edge.getSUID()).set("name", sourcename+"->"+targetname);
+		CyNetworkView [] cnvs = new CyNetworkView[1];
+		cnvm.getNetworkViews(petriNet).toArray(cnvs);
+		CyNetworkView cnv = cnvs[0];
+		cnv.updateView();
+		View<CyEdge> view = cnv.getEdgeView(edge);
+		view.setLockedValue(BasicVisualLexicon.EDGE_TARGET_ARROW_SHAPE, ArrowShapeVisualProperty.ARROW);
 	}
 }

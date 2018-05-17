@@ -15,6 +15,8 @@ import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
+import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 
@@ -88,19 +90,20 @@ public class PetriPanel extends JPanel implements CytoPanelComponent {
 		JPanel top = new JPanel();				// Upper Panel of jPanel
 		top.setLayout(new GridLayout(0,1));
 		top.add(new Label("Control Panel for Petri Net App"));
+		final JComboBox<String> invarHolder = new JComboBox<String>();
 		JButton createBut = new JButton("Create new Petri Net");
 		createBut.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				if (petriNet != null) {						// Destroy previously loaded Petri Net, only one active at a time
 					cyNetworkManagerServiceRef.destroyNetwork(petriNet);
-					}
-					petriNet = cyNetworkFactoryServiceRef.createNetwork();	// New Network for Petri Net
-					cyNetworkManagerServiceRef.addNetwork(petriNet);
-					petriUtils = new PetriUtils(petriNet, cyNetworkViewManagerServiceRef,	// Used for updating views later on
-							cyNetworkViewFactoryServiceRef, visualMappingManagerRef,
-							cyLayoutAlgorithmManagerRef, adapter, visualMappingFunctionFactoryRefd); 
-					petriUtils.initializeColumns();
-					petriUtils.createVisualStyle();
+				}
+				petriNet = cyNetworkFactoryServiceRef.createNetwork();	// New Network for Petri Net
+				cyNetworkManagerServiceRef.addNetwork(petriNet);
+				petriUtils = new PetriUtils(petriNet, cyNetworkViewManagerServiceRef,	// Used for updating views later on
+						cyNetworkViewFactoryServiceRef, visualMappingManagerRef,
+						cyLayoutAlgorithmManagerRef, adapter, visualMappingFunctionFactoryRefd); 
+				petriUtils.initializeColumns();
+				petriUtils.createVisualStyle();
 			}
 		});
 		top.add(createBut);
@@ -148,7 +151,7 @@ public class PetriPanel extends JPanel implements CytoPanelComponent {
 		loadBut.addActionListener(new ActionListener() {	
 			public void actionPerformed(ActionEvent e) {
 				if (petriNet != null) {						// Destroy previously loaded Petri Net, only one active at a time
-				cyNetworkManagerServiceRef.destroyNetwork(petriNet);
+					cyNetworkManagerServiceRef.destroyNetwork(petriNet);
 				}
 				petriNet = cyNetworkFactoryServiceRef.createNetwork();	// New Network for Petri Net
 				cyNetworkManagerServiceRef.addNetwork(petriNet);
@@ -183,7 +186,6 @@ public class PetriPanel extends JPanel implements CytoPanelComponent {
 			}
 		});
 		top.add(resetBut);
-		final JComboBox<String> invarHolder = new JComboBox<String>();
 		invarHolder.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				Integer[] invar = petriUtils.invars.get(invarHolder.getSelectedIndex());
@@ -211,9 +213,14 @@ public class PetriPanel extends JPanel implements CytoPanelComponent {
 				}
 			}
 		});
-		JButton invarBut = new JButton("Calculate Invariants");	// Button for calculating invariants
+		JButton invarBut = new JButton("Calculate T-Invariants");	// Button for calculating invariants
 		invarBut.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
+				JFrame f = new JFrame("Warning");
+				int choice = JOptionPane.showConfirmDialog(f, "Do you really want to calculate invariants?");
+				if (choice != JOptionPane.YES_OPTION) {
+					return;
+				}
 				CyNode[] cyTransitionArray = petriUtils.getTransitions();
 				CyNode[] cyPlaceArray = petriUtils.getPlaces();
 				ArrayList<Integer[]> invars = petriUtils.invar(cyTransitionArray, cyPlaceArray);
@@ -243,6 +250,7 @@ public class PetriPanel extends JPanel implements CytoPanelComponent {
 				adapter.getTaskManager().execute(itr);
 				SynchronousTaskManager<?> synTaskMan = adapter.getCyServiceRegistrar().getService(SynchronousTaskManager.class);
 				synTaskMan.execute(itr);
+				petriUtils.is_CTI();
 			}
 		});
 		top.add(invarBut);

@@ -61,6 +61,7 @@ public class PetriUtils {
 		this.clam = clam;
 		this.adapter = adapter;
 		this.vmffd = vmffd;
+		this.invars = new ArrayList<Integer[]>();
 	}
 
 	/**
@@ -450,14 +451,51 @@ public class PetriUtils {
 		}*/
 	}
 	
-	public void applyInvars(Integer[][] invars) { // probably change this completely to menubox thingy support
-		CyNetworkView [] cnvs = new CyNetworkView[1];
-		cnvm.getNetworkViews(petriNet).toArray(cnvs);
-		CyNetworkView cnv = cnvs[0];
-		Set <View<CyEdge>> edgeviews = new HashSet <View<CyEdge>> ();
-		edgeviews.addAll(cnv.getEdgeViews());
-		//apply color to all edges of transitions covered by t-invariants?
-		//what if transitions are part of more than one invariant?
+	public void is_CTI() {
+		int length = 0;
+		for (CyNode n : petriNet.getNodeList()) {	// Get length of array
+			String ntype = (String) (petriNet.getDefaultNodeTable().getRow(n.getSUID()).get("type", String.class));
+			if (ntype.equals("Transition")) {
+				length++;				
+			}
+		}
+		Integer[] cti = new Integer[length];
+		for (int i=0; i<length; i++) {
+			cti[i] = 0;
+		}
+		for (Integer[] invar : invars) {
+			for (int i=0; i<invar.length; i++) {
+				if (invar[i]>0) {
+					cti[i] = 1;
+				}
+			}
+		}
+		boolean all_cti = true;
+		ArrayList<Integer> not_cti = new ArrayList<Integer>();
+		for (int i=0; i<cti.length; i++) {
+			if (cti[i] == 0) {
+				all_cti = false;
+				not_cti.add(i);
+			}
+		}
+		JFrame f = new JFrame("Check for CTI");
+		if (all_cti) {
+			JOptionPane.showMessageDialog(f, "Network is CTI");
+		}
+		else {
+			String msg = "Network is not CTI\nNon-CTI Transitions:\n";
+			for (Integer trans : not_cti) {
+				CyNode node = null;
+				for (CyNode n : petriNet.getNodeList()) {
+					if (petriNet.getDefaultNodeTable().getRow(n.getSUID()).get("internal id", String.class).equals("t"+Integer.toString(trans-1))) {
+						node = n;
+						break;
+					}
+				}
+				msg += petriNet.getDefaultNodeTable().getRow(node.getSUID()).get("name", String.class);
+			}
+			JOptionPane.showMessageDialog(f, msg);
+		}
 	}
 	
 	/**
@@ -473,7 +511,7 @@ public class PetriUtils {
 	 * Similar to AbstractTaskFactory.CreateTaskIterator
 	 */
 	public TaskIterator createTransition() {
-		return new TaskIterator(new CreateTransitionTask(petriNet));
+		return new TaskIterator(new CreateTransitionTask(petriNet, cnvm));
 	}
 
 	/**
@@ -481,7 +519,7 @@ public class PetriUtils {
 	 * Similar to AbstractTaskFactory.CreateTaskIterator
 	 */
 	public TaskIterator createPlace() {
-		return new TaskIterator(new CreatePlaceTask(petriNet));
+		return new TaskIterator(new CreatePlaceTask(petriNet, cnvm));
 	}
 
 	/**
@@ -489,6 +527,6 @@ public class PetriUtils {
 	 * Similar to AbstractTaskFactory.CreateTaskIterator
 	 */
 	public TaskIterator createEdge() {
-		return new TaskIterator(new CreateEdgeTask(petriNet));
+		return new TaskIterator(new CreateEdgeTask(petriNet, cnvm));
 	}
 }
