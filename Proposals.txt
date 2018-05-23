@@ -1,0 +1,19 @@
+Changes to Code
+Gx	Rename new Network to filename of input file
+Gx	Remove SynchronousTaskManagerRef
+K	Improve warning for calculation of minimal t-invariants, include that edgeweights are assumed to be 1
+G	Implement function to check for non-ints, use in verifyNet and CreateXTask
+G	Combine check in verifyNet for nodes of same type instead of both place/both transition
+K	Reset without getters
+K	Comment function to calculate invars
+K	Comment function to check for CTI
+K	Read invariants from input file (-> task? factory for task?)
+K	Finish Export to SBML
+
+Changes to Structure
+G	Rename ViewUpdaterTask to UpdateViewTask
+G	Separate PetriUtils in Factories and actual Utilities
+G	Include PetriTaskFactory in new FactoryClass or make Classes for each Factory
+
+Check Input Formats
+K	Weights in pnn, metatool.dat, reactionlist, KGML(?)
