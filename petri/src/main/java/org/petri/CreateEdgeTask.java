@@ -17,6 +17,11 @@ import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
 
+/**
+ * Used for creating edges within already existing Petri Nets
+ * @author M. Gehrmann, M.Kirchner
+ *
+ */
 public class CreateEdgeTask extends AbstractTask {
 	
 	private CyNetwork petriNet;
@@ -28,20 +33,24 @@ public class CreateEdgeTask extends AbstractTask {
 	@Tunable(description="Weight of Edge", groups="Weight")
 	public String weight;
 	
-	
+	/**
+	 * Constructor
+	 * @param petriNet Petri Net within which edge is to be created
+	 * @param cnvm Used to update view of newly created edge
+	 */
 	public CreateEdgeTask(CyNetwork petriNet, CyNetworkViewManager cnvm) {
 		this.petriNet = petriNet;
 		this.cnvm = cnvm;
 	}
 
 	public void run(TaskMonitor taskMonitor) throws Exception {
-		if (sourceID.equals("") || targetID.equals("") || weight.equals("")) {
+		if (sourceID.equals("") || targetID.equals("") || weight.equals("")) { // Check for empty values
 			JFrame f = new JFrame("Error during edge creation");
 			String msg = "Missing input values";
 			JOptionPane.showMessageDialog(f, msg);
 			return;
 		}
-		boolean invalidWeight;
+		boolean invalidWeight; // Check for non-int weights
 	    Scanner sc = new Scanner(weight.trim());
 	    if(!sc.hasNextInt(10)) {
 	    	invalidWeight = true;
@@ -51,15 +60,15 @@ public class CreateEdgeTask extends AbstractTask {
 	    invalidWeight = sc.hasNext();
 	    }
 	    sc.close();
-		if (invalidWeight || Integer.parseInt(weight) < 1) {
+		if (invalidWeight || Integer.parseInt(weight) < 1) { // non-int weights or weight < 1
 			JFrame f = new JFrame("Error during edge creation");
 			String msg = "Invalid weight";
 			JOptionPane.showMessageDialog(f, msg);
 			return;
 		}
-		CyNode source = null;
+		CyNode source = null; // initialize source and target nodes for edge
 		CyNode target = null;
-		for (CyNode n : petriNet.getNodeList()) {
+		for (CyNode n : petriNet.getNodeList()) { // search for source and target node by internal id
 			if (petriNet.getDefaultNodeTable().getRow(n.getSUID()).get("internal id", String.class).equals(sourceID)) {
 				source = n;
 			}
@@ -67,25 +76,27 @@ public class CreateEdgeTask extends AbstractTask {
 				target = n;
 			}
 		}
-		if (source == null || target == null) {
+		if (source == null || target == null) { // one or both of the nodes have not been found
 			JFrame f = new JFrame("Error during edge creation");
 			String msg = "Source or Target not found";
 			JOptionPane.showMessageDialog(f, msg);
 			return;
 		}
-		if (petriNet.getDefaultNodeTable().getRow(source.getSUID()).get("type", String.class).equals(
+		if (petriNet.getDefaultNodeTable().getRow(source.getSUID()).get("type", String.class).equals( // nodes have same type
 				petriNet.getDefaultNodeTable().getRow(target.getSUID()).get("type", String.class))) {
 			JFrame f = new JFrame("Error during edge creation");
 			String msg = "Source and Target have same type";
 			JOptionPane.showMessageDialog(f, msg);
 			return;
 		}
+		// Create new edge and fill ins its attributes
 		CyEdge edge = petriNet.addEdge(source, target, true);
 		petriNet.getDefaultEdgeTable().getRow(edge.getSUID()).set("internal id", "e"+Integer.toString(petriNet.getEdgeCount()-1));
 		petriNet.getDefaultEdgeTable().getRow(edge.getSUID()).set("weight", Integer.parseInt(weight));
 		String sourcename = petriNet.getDefaultNodeTable().getRow(source.getSUID()).get("name", String.class);
 		String targetname = petriNet.getDefaultNodeTable().getRow(target.getSUID()).get("name", String.class);
 		petriNet.getDefaultEdgeTable().getRow(edge.getSUID()).set("name", sourcename+"->"+targetname);
+		// Update view of newly created edge
 		CyNetworkView [] cnvs = new CyNetworkView[1];
 		cnvm.getNetworkViews(petriNet).toArray(cnvs);
 		CyNetworkView cnv = cnvs[0];

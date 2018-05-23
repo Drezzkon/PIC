@@ -7,6 +7,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.regex.Pattern;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -20,9 +22,10 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 /**
- * Class for loading Petri Nets from different input formats.
+ * Used for loading Petri Nets from different input formats.
  * Supported Formats:
  * 	- sbml
+ *  - kgml
  * 	- pnt
  * 	- apnn
  *  - metatool.dat
@@ -41,7 +44,7 @@ public class FileUtils {
 
 	/**
 	 * Constructor
-	 * @param inpFile - file to read from
+	 * @param inpFile file to read from
 	 */
 	public FileUtils(File inpFile) {
 		this.inpFile = inpFile;
@@ -49,9 +52,9 @@ public class FileUtils {
 
 	/**
 	 * Loads Petri Net from SBML format.
-	 * @param petriNet - Network to be used to represent Petri Net
-	 * @param doc - XML-Document used to extract information
-	 * @throws Exception - Errors during loading, incorrect format
+	 * @param petriNet Network to be used to represent Petri Net
+	 * @param doc XML-Document used to extract information
+	 * @throws Exception Errors during loading or incorrect format
 	 */
 	public void readSBML(CyNetwork petriNet, Document doc) throws Exception {
 		//Generating Nodes for Places
@@ -65,13 +68,14 @@ public class FileUtils {
 			petriNet.getDefaultNodeTable().getRow(cyPlaceArray[i].getSUID()).set("tokens", Integer.parseInt(element.getAttribute("initialAmount")));
 			petriNet.getDefaultNodeTable().getRow(cyPlaceArray[i].getSUID()).set("initial tokens", Integer.parseInt(element.getAttribute("initialAmount")));
 			petriNet.getDefaultNodeTable().getRow(cyPlaceArray[i].getSUID()).set("type", "Place");
-			if (element.getAttribute("name") != "") {
+			if (element.getAttribute("name") != "") { // if name exists, set it, else set name = id
 				petriNet.getDefaultNodeTable().getRow(cyPlaceArray[i].getSUID()).set("name", element.getAttribute("name"));
 			}
 			else {
 				petriNet.getDefaultNodeTable().getRow(cyPlaceArray[i].getSUID()).set("name", element.getAttribute("id"));
 			}
 		}
+		// Generating nodes for transitions
 		NodeList listOfTransitions = doc.getElementsByTagName("reaction");
 		CyNode [] cyTransitionArray = new CyNode[listOfTransitions.getLength()];
 		CyEdge [] cyEdgeArray = new CyEdge[listOfPlaces.getLength()*listOfTransitions.getLength()];
@@ -91,7 +95,7 @@ public class FileUtils {
 				petriNet.getDefaultNodeTable().getRow(cyTransitionArray[i].getSUID()).set("name", id);
 			}
 			NodeList children = element.getChildNodes();
-			
+			// Create edges for the current transition
 			for (int index = 0; index<children.getLength(); index++) {
 				String nname = children.item(index).getNodeName();
 				if (nname.equals("listOfReactants")) { // Outgoing edges
@@ -136,11 +140,12 @@ public class FileUtils {
 
 	/**
 	 * Loads Petri Net from KGML format.
-	 * @param petriNet - Network to be used to represent Petri Net
-	 * @param doc - XML-Document used to extract information
-	 * @throws Exception - Errors during loading, incorrect format
+	 * @param petriNet Network to be used to represent Petri Net
+	 * @param doc XML-Document used to extract information
+	 * @throws Exception Errors during loading or incorrect format
 	 */
 	public void readKGML(CyNetwork petriNet, Document doc) throws Exception {
+		// Create nodes for places
 		NodeList listOfPlaces = doc.getElementsByTagName("entry");
 		CyNode[] cyPlaceArray = new CyNode[listOfPlaces.getLength()];
 		for (int i=0; i<listOfPlaces.getLength(); i++) {
@@ -153,18 +158,20 @@ public class FileUtils {
 			petriNet.getDefaultNodeTable().getRow(cyPlaceArray[i].getSUID()).set("initial tokens", 0);
 			petriNet.getDefaultNodeTable().getRow(cyPlaceArray[i].getSUID()).set("tokens", 0);
 		}
+		// Create nodes for transitions
 		NodeList listOfTransitions = doc.getElementsByTagName("reaction");
 		CyNode[] cyTransitionArray = new CyNode[listOfTransitions.getLength()];
 		int numOfEdges = 0;
 		for (int i=0; i<listOfTransitions.getLength(); i++) {
-			cyTransitionArray[i] = petriNet.addNode();
 			Element trans = (Element) listOfTransitions.item(i);
+			cyTransitionArray[i] = petriNet.addNode();
 			petriNet.getDefaultNodeTable().getRow(cyTransitionArray[i].getSUID()).set("internal id", "t"+Integer.toString(i));
 			petriNet.getDefaultNodeTable().getRow(cyTransitionArray[i].getSUID()).set("id", "r" + trans.getAttribute("id"));
 			petriNet.getDefaultNodeTable().getRow(cyTransitionArray[i].getSUID()).set("name", trans.getAttribute("name"));
 			petriNet.getDefaultNodeTable().getRow(cyTransitionArray[i].getSUID()).set("type", "Transition");
 			petriNet.getDefaultNodeTable().getRow(cyTransitionArray[i].getSUID()).set("fired", 0);
-			NodeList reactands = trans.getElementsByTagName("substrate");
+			// Create edges for current transition
+			NodeList reactands = trans.getElementsByTagName("substrate"); // Incoming edges
 			for (int index=0; index<reactands.getLength(); index++) {
 				Element react = (Element) reactands.item(index);
 				String id = "e" + react.getAttribute("id");
@@ -181,7 +188,7 @@ public class FileUtils {
 				petriNet.getDefaultEdgeTable().getRow(e.getSUID()).set("internal id", "e"+Integer.toString(numOfEdges));
 				numOfEdges++;
 			}
-			NodeList products = trans.getElementsByTagName("product");
+			NodeList products = trans.getElementsByTagName("product"); // Outgoing edges
 			for (int index=0; index<products.getLength(); index++) {
 				Element product = (Element) products.item(index);
 				String id = "e" + product.getAttribute("id");
@@ -199,17 +206,36 @@ public class FileUtils {
 				numOfEdges++;
 			}
 		}
+		// Remove duplicate and/or nodes without edges
+		Set<CyNode> toRemove = new HashSet<CyNode>();
+		for (CyNode n : petriNet.getNodeList()) {
+			if (toRemove.contains(n)) {
+				continue;
+			}
+			if (petriNet.getAdjacentEdgeList(n, CyEdge.Type.ANY).isEmpty()) {
+				toRemove.add(n);
+				continue;
+			}
+			for (CyNode m : petriNet.getNodeList()) {
+				if (n != m && petriNet.getDefaultNodeTable().getRow(n.getSUID()).get("name", String.class).equals(
+						petriNet.getDefaultNodeTable().getRow(m.getSUID()).get("name", String.class))) {
+						toRemove.add(m);
+				}
+			}
+		}
+		petriNet.removeNodes(toRemove);
 	}
 	
 	/**
 	 * Loads Petri Net from PNT format.
-	 * @param petriNet - Network to be used to represent Petri Net
-	 * @param content 
-	 * @throws Exception - Errors during loading, incorrect format
+	 * @param petriNet Network to be used to represent Petri Net
+	 * @param content Content of input file
+	 * @throws Exception Errors during loading or incorrect format
 	 */
 	public void readPNT(CyNetwork petriNet, String content) throws Exception {
 		ArrayList<CyEdge> edges = new ArrayList<CyEdge>();
 		String splitString[] = content.split("@");
+		// Creating new places
 		String placesSplit[] = splitString[1].split("\\r?\\n");
 		CyNode [] cyPlaceArray = new CyNode[placesSplit.length - 1];
 		for (int i = 2; i<placesSplit.length; i++){
@@ -221,6 +247,7 @@ public class FileUtils {
 			petriNet.getDefaultNodeTable().getRow(cyPlaceArray[i - 2].getSUID()).set("initial tokens", 0);
 			petriNet.getDefaultNodeTable().getRow(cyPlaceArray[i - 2].getSUID()).set("type", "Place");
 		}
+		// Creating new transitions
 		String transitionsSplit[] = splitString[2].split("\\r?\\n");
 		CyNode [] cyTransitionArray = new CyNode[transitionsSplit.length - 1];
 		for (int i = 2; i<transitionsSplit.length; i++){
@@ -231,6 +258,7 @@ public class FileUtils {
 			petriNet.getDefaultNodeTable().getRow(cyTransitionArray[i - 2].getSUID()).set("type", "Transition");
 			petriNet.getDefaultNodeTable().getRow(cyTransitionArray[i - 2].getSUID()).set("fired", 0);
 		}
+		// Creating new edges
 		String edgesSplit[] = splitString[0].split("\\r?\\n");
 		for (int i = 1; i<edgesSplit.length; i++){
 			String placeEdgesSplit[] = edgesSplit[i].split(",");
@@ -254,9 +282,9 @@ public class FileUtils {
 
 	/**
 	 * Loads Petri Net from APNN format.
-	 * @param petriNet - Network to be used to represent Petri Net
-	 * @param content 
-	 * @throws Exception - Errors during loading, incorrect format
+	 * @param petriNet Network to be used to represent Petri Net
+	 * @param content Content of input file
+	 * @throws Exception Errors during loading or incorrect format
 	 */
 	public void readAPNN(CyNetwork petriNet, String content) throws Exception {
 		String splitString[] = content.split("\\r?\\n");
@@ -269,7 +297,7 @@ public class FileUtils {
 			if (lineSplit.length == 1) {
 				continue;
 			}
-			if (lineSplit[1].contains("place")) {
+			if (lineSplit[1].contains("place")) { // Create a new place
 				CyNode place = petriNet.addNode();
 				places.add(place);
 				petriNet.getDefaultNodeTable().getRow(place.getSUID()).set("type", "Place");
@@ -281,6 +309,8 @@ public class FileUtils {
 					}
 					int pos1 = split.indexOf("{");
 					int pos2 = split.indexOf("}");
+					// Substring until first curly bracket contains attribute name
+					// Substring between curly brackets contains attribute value
 					if (split.substring(0, pos1).equals("place")) {
 						petriNet.getDefaultNodeTable().getRow(place.getSUID()).set("id", split.substring(pos1+1, pos2));
 					}
@@ -295,7 +325,7 @@ public class FileUtils {
 					}
 				}
 			}
-			else if (lineSplit[1].contains("transition")) {
+			else if (lineSplit[1].contains("transition")) { // Create a new transition
 				CyNode trans = petriNet.addNode();
 				transitions.add(trans);
 				petriNet.getDefaultNodeTable().getRow(trans.getSUID()).set("type", "Transition");
@@ -306,6 +336,8 @@ public class FileUtils {
 					if (split.length() == 0) {
 						continue;
 					}
+					// Substring until first curly bracket contains attribute name
+					// Substring between curly brackets contains attribute value
 					int pos1 = split.indexOf("{");
 					int pos2 = split.indexOf("}");
 					if (split.substring(0, pos1).equals("transition")) {
@@ -316,7 +348,7 @@ public class FileUtils {
 					}
 				}
 			}
-			else if (lineSplit[1].contains("arc")) {
+			else if (lineSplit[1].contains("arc")) { // Create a new edge
 				CyNode source = null;
 				int pos1 = lineSplit[2].indexOf("{");
 				int pos2 = lineSplit[2].indexOf("}");
@@ -357,9 +389,9 @@ public class FileUtils {
 
 	/**
 	 * Loads Petri Net from metatool.dat format.
-	 * @param petriNet
-	 * @param content 
-	 * @throws Exception
+	 * @param petriNet Network to be used to represent Petri Net
+	 * @param content Content of input file
+	 * @throws Exception Errors during loading or incorrect format
 	 */
 	public void readDAT(CyNetwork petriNet, String content) throws Exception {
 		String splitString[] = content.split("\\r?\\n");
@@ -367,7 +399,7 @@ public class FileUtils {
 		ArrayList<String> places = new ArrayList<String>();
 		for (int i = 0; i<splitString.length; i++){
 			Integer x = i + 1;
-			if (splitString[i].equals("-ENZIRREV")){
+			if (splitString[i].equals("-ENZIRREV")){ // transitions
 				transitions.addAll(Arrays.asList(splitString[x].split("\\s+")));
 				CyNode [] cyTransitionArray = new CyNode[transitions.size()];
 				for (int y = 0; y < transitions.size(); y++){
@@ -379,7 +411,7 @@ public class FileUtils {
 					petriNet.getDefaultNodeTable().getRow(cyTransitionArray[y].getSUID()).set("internal id", "t"+Integer.toString(y));
 				}
 			}
-			else if (splitString[i].equals("-METINT")){
+			else if (splitString[i].equals("-METINT")){ // places
 				places.addAll(Arrays.asList(splitString[x].split("\\s+")));
 				CyNode [] cyPlaceArray = new CyNode[places.size()];
 				for (int y = 0; y < places.size(); y ++){
@@ -393,7 +425,7 @@ public class FileUtils {
 
 				}
 			}
-			else if (splitString[i].equals("-CAT")){
+			else if (splitString[i].equals("-CAT")){ // edges
 				Integer numOfEdges = 0;
 				CyEdge [] cyEdgeArray = new CyEdge[transitions.size()*places.size()];
 				for (int y = x; y < splitString.length; y++){
@@ -406,8 +438,9 @@ public class FileUtils {
 							break;
 						}
 					}
-					String currentPosition =  "left";
+					String currentPosition =  "left"; // name of transition
 					for (int z = 0; z < lineSplit.length; z++){
+						// new incoming edge (reactant)
 						if (currentPosition.equals("middle") && !lineSplit[z].equals(":") && !lineSplit[z].equals("=")
 								&& !lineSplit[z].equals(".") && !lineSplit[z].equals("+")){	
 							CyNode place = null;
@@ -423,6 +456,7 @@ public class FileUtils {
 							petriNet.getDefaultEdgeTable().getRow(cyEdgeArray[numOfEdges].getSUID()).set("internal id", "e"+Integer.toString(numOfEdges));
 							numOfEdges++;
 						}
+						// new outgoing edge (product)
 						else if (currentPosition.equals("right") && !lineSplit[z].equals(":") && !lineSplit[z].equals("=")
 								&& !lineSplit[z].equals(".") && !lineSplit[z].equals("+")){
 							CyNode place = null;
@@ -438,10 +472,10 @@ public class FileUtils {
 							petriNet.getDefaultEdgeTable().getRow(cyEdgeArray[numOfEdges].getSUID()).set("internal id", "e"+Integer.toString(numOfEdges));
 							numOfEdges++;
 						}
-						if (lineSplit[z].equals(":")){
+						if (lineSplit[z].equals(":")){ // entering reactants
 							currentPosition = "middle";
 						}
-						else if (lineSplit[z].equals("=")){
+						else if (lineSplit[z].equals("=")){ // entering products
 							currentPosition = "right";
 						}
 					}
@@ -452,8 +486,9 @@ public class FileUtils {
 
 	/**
 	 * Loads Petri Net from Reactionlist, assumed extension .txt.
-	 * @param petriNet - Network to be used to represent Petri Net
-	 * @throws Exception - Errors during loading, incorrect format
+	 * @param petriNet Network to be used to represent Petri Net
+	 * @param content Content of input file
+	 * @throws Exception Errors during loading or incorrect format
 	 */
 	public void readRL(CyNetwork petriNet, String content) throws Exception {
 		String splitString[] = content.split("\\r?\\n");
@@ -515,7 +550,7 @@ public class FileUtils {
 	}
 
 	/**
-	 * Extracts content of input file
+	 * Extracts content of input file for non-XML files
 	 * @return content of input file
 	 * @throws IOException
 	 */
@@ -540,17 +575,17 @@ public class FileUtils {
 	
 	/**
 	 * Decides which function to call based on file extension
-	 * @param ext - extension of the file
-	 * @param petriNet - Network to be used to represent Petri Net
-	 * @throws Exception - Errors during loading, incorrect format
+	 * @param ext extension of the file
+	 * @param petriNet Network to be used to represent Petri Net
+	 * @throws Exception Errors during loading or incorrect format
 	 */
 	public void choose(String ext, CyNetwork petriNet) throws Exception {
-		if (ext.equals("xml")) {
+		if (ext.equals("xml")) { // SBML or KGML format
 			DocumentBuilderFactory docBuilderFactory = DocumentBuilderFactory.newInstance();
 			DocumentBuilder docBuilder = docBuilderFactory.newDocumentBuilder();
 			Document doc = docBuilder.parse(inpFile);
 			NodeList sbml = doc.getElementsByTagName("sbml");
-			if (sbml.getLength() == 0) {
+			if (sbml.getLength() == 0) { // If not SBML format, this will be zero
 				readKGML(petriNet, doc);
 			}
 			else {

@@ -11,7 +11,8 @@ import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
 
 /**
- * App for Cytoscape to support Petri Nets
+ * Task to load Petri Net from file and create default layout and
+ * visual style
  * @author M. Gehrmann, M. Kirchner
  *
  */
@@ -27,12 +28,12 @@ public class PetriTask extends AbstractTask {
 	
 	/**
 	 * Constructor
-	 * @param netMgr
-	 * @param namingUtil
-	 * @param cnvm
-	 * @param eventHelper
-	 * @param petriNet
-	 * @param petriUtils
+	 * @param netMgr CyNetworkManager
+	 * @param namingUtil CyNetworkNaming
+	 * @param cnvm CyNetworkViewManager
+	 * @param eventHelper EventHelper
+	 * @param petriNet Petri Net to be filled with data
+	 * @param petriUtils Utilities for Petri Net
 	 */
 	public PetriTask(final CyNetworkManager netMgr, final CyNetworkNaming namingUtil, final CyNetworkViewManager cnvm,
 			final CyEventHelper eventHelper, CyNetwork petriNet, PetriUtils petriUtils){

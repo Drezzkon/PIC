@@ -23,12 +23,12 @@ public class PetriTaskFactory extends AbstractTaskFactory{
 	
 	/**
 	 * Constructor
-	 * @param netMgr
-	 * @param namingUtil
-	 * @param cnvm
-	 * @param eventHelper
-	 * @param petriNet
-	 * @param petriUtils
+	 * @param netMgr CyNetworkManager
+	 * @param namingUtil CyNetworkNaming
+	 * @param cnvm CyNetworkViewManager
+	 * @param eventHelper EventHelper
+	 * @param petriNet Petri Net to be filled with data
+	 * @param petriUtils Utilities for Petri Net
 	 */
 	public PetriTaskFactory(final CyNetworkManager netMgr, final CyNetworkNaming namingUtil,
 			final CyNetworkViewManager cnvm, final CyEventHelper eventHelper, final CyNetwork petriNet,

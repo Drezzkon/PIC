@@ -60,17 +60,17 @@ public class PetriPanel extends JPanel implements CytoPanelComponent {
 
 	/**
 	 * Constructor
-	 * @param cyNetworkManagerServiceRef
-	 * @param cyNetworkNamingServiceRef
-	 * @param cyNetworkFactoryServiceRef
-	 * @param cyNetworkViewFactoryServiceRef
-	 * @param cyNetworkViewManagerServiceRef
-	 * @param eventHelperServiceRef
-	 * @param cyLayoutAlgorithmManagerRef
-	 * @param synchronousTaskManagerRef
-	 * @param visualMappingManagerRef
-	 * @param visualMappingFunctionFactoryRefd
-	 * @param adapter
+	 * @param cyNetworkManagerServiceRef CyNetworkManager
+	 * @param cyNetworkNamingServiceRef CyNetworkNaming
+	 * @param cyNetworkFactoryServiceRef CyNetworkFactory
+	 * @param cyNetworkViewFactoryServiceRef CyNetworkViewFactory
+	 * @param cyNetworkViewManagerServiceRef CyNetworkViewManager
+	 * @param eventHelperServiceRef EventHelper
+	 * @param cyLayoutAlgorithmManagerRef CyLayoutAlgorithmManager
+	 * @param synchronousTaskManagerRef SynchronousTaskManager
+	 * @param visualMappingManagerRef VisualMappingManager
+	 * @param visualMappingFunctionFactoryRefd VisualMappingFunctionFactory for discrete mappings
+	 * @param adapter CyAppAdapter
 	 */
 	public PetriPanel(final CyNetworkManager cyNetworkManagerServiceRef,
 			final CyNetworkNaming cyNetworkNamingServiceRef,
@@ -190,16 +190,17 @@ public class PetriPanel extends JPanel implements CytoPanelComponent {
 		top.add(resetBut);
 		invarHolder.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				if (invarHolder.getItemCount() == 0) {
+				if (invarHolder.getItemCount() == 0) { // Do not update on resetting the container
 					return;
 				}
 				Integer[] invar = petriUtils.invars.get(invarHolder.getSelectedIndex());
 				CyNetworkView [] cnvs = new CyNetworkView[1];
 				cyNetworkViewManagerServiceRef.getNetworkViews(petriNet).toArray(cnvs);
 				CyNetworkView cnv = cnvs[0];
-				for (View <CyEdge> edgeview : cnv.getEdgeViews()){
+				for (View <CyEdge> edgeview : cnv.getEdgeViews()){ // Clear locked edge colours from previously selected invariant
 					edgeview.clearValueLock(BasicVisualLexicon.EDGE_PAINT);
 				}
+				// Gather all transitions belonging to invariant and paint their edges
 				for (int i=1; i<=invar.length; i++) {
 					if(invar[invar.length-i] == 1) {
 						CyNode trans = null;
@@ -231,6 +232,7 @@ public class PetriPanel extends JPanel implements CytoPanelComponent {
 				CyNode[] cyPlaceArray = petriUtils.getPlaces();
 				ArrayList<Integer[]> invars = petriUtils.invar(cyTransitionArray, cyPlaceArray);
 				petriUtils.invars = invars;
+				// Transform invariants for visual representation and add them to container
 				for (int index=0; index<invars.size(); index++) {
 					Integer[] invar = invars.get(index);
 					String empty = "";
@@ -246,8 +248,6 @@ public class PetriPanel extends JPanel implements CytoPanelComponent {
 							}
 							empty += name + ", ";
 						}
-						//if (invar[invar.length-i] == 1) empty += "t"+current.toString()+";";
-						// empty += "t" + current.toString() + ": "+ invar[invar.length-i].toString() + "; ";
 						current++;
 					}
 					invarHolder.addItem(empty.substring(0, empty.lastIndexOf(",")));

@@ -11,8 +11,7 @@ import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
 
 /**
- * Task for updating view of Petri Net based on new
- * token amounts and whether/how often transitions fired
+ * Task for updating view of Petri Net after firing
  * @author M. Gehrmann, M. Kirchner
  *
  */
@@ -24,8 +23,8 @@ public class ViewUpdaterTask extends AbstractTask {
 	
 	/**
 	 * Constructor
-	 * @param petriNet
-	 * @param cnvm
+	 * @param petriNet Petri net for which view should be updated
+	 * @param cnvm CyNetworkViewManager
 	 */
 	public ViewUpdaterTask(CyNetwork petriNet, CyNetworkViewManager cnvm) {
 		this.petriNet = petriNet;

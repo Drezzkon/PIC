@@ -32,7 +32,7 @@ import org.cytoscape.work.SynchronousTaskManager;
 import org.cytoscape.work.TaskIterator;
 
 /**
- * Utilites for managing Petri Nets, like updating views and firing
+ * Utilities for managing Petri Nets
  * @author M. Gehrmann, M. Kirchner
  *
  */
@@ -49,8 +49,13 @@ public class PetriUtils {
 	
 	/**
 	 * Constructor
-	 * @param petriNet
-	 * @param cnvm
+	 * @param petriNet Petri Net to be filled with data
+	 * @param cnvm Used to update views
+	 * @param cnvf Used to create new view
+	 * @param vmm Used to create visual style
+	 * @param clam Used to create layout for new network
+	 * @param adapter Used for executing tasks
+	 * @param vmffd VisualMappingFunctionFactory for discrete mappings
 	 */
 	public PetriUtils(CyNetwork petriNet, CyNetworkViewManager cnvm, CyNetworkViewFactory cnvf, VisualMappingManager vmm,
 			CyLayoutAlgorithmManager clam, CyAppAdapter adapter, VisualMappingFunctionFactory vmffd) {
@@ -102,7 +107,7 @@ public class PetriUtils {
 		}
 		CyNode[] cyPlaceArray = new CyNode[length];
 		length = 0;
-		for (CyNode n : petriNet.getNodeList()) {
+		for (CyNode n : petriNet.getNodeList()) {	// Insert places into array
 			String ntype = (String) (petriNet.getDefaultNodeTable().getRow(n.getSUID()).get("type", String.class));
 			if (ntype.equals("Place")) {
 				cyPlaceArray[length] = n;
@@ -185,28 +190,42 @@ public class PetriUtils {
 		petriNet.getNodeList().toArray(cyNodeArray);
 		ArrayList<String> errors = new ArrayList<String>();
 		for (CyNode n : cyNodeArray) {
+			// Missing type
 			if (petriNet.getDefaultNodeTable().getRow(n.getSUID()).get("type", String.class) == null) {
 				errors.add(petriNet.getDefaultNodeTable().getRow(n.getSUID()).get("name", String.class) + ": missing type");
 			}
+			// Wrong type
+			else if (!petriNet.getDefaultNodeTable().getRow(n.getSUID()).get("type", String.class).equals("Place") ||
+					!petriNet.getDefaultNodeTable().getRow(n.getSUID()).get("type", String.class).equals("Transition")) {
+				errors.add(petriNet.getDefaultNodeTable().getRow(n.getSUID()).get("name", String.class)+ ": wrong type");
+			}
+			// Errors for places
 			else if (petriNet.getDefaultNodeTable().getRow(n.getSUID()).get("type", String.class).equals("Place")) {
+				// Missing tokens, no check for non-int
 				if (petriNet.getDefaultNodeTable().getRow(n.getSUID()).get("tokens", Integer.class) == null) {
 					errors.add(petriNet.getDefaultNodeTable().getRow(n.getSUID()).get("name", String.class) + ": missing tokens");
 				}
+				// Missing initial tokens, no check for non-int
 				if (petriNet.getDefaultNodeTable().getRow(n.getSUID()).get("initial tokens", Integer.class) == null) {
 					errors.add(petriNet.getDefaultNodeTable().getRow(n.getSUID()).get("name", String.class) + ": missing initial tokens");				
 				}
+				// Fired defined for a place even though it shouldn't be
 				if (petriNet.getDefaultNodeTable().getRow(n.getSUID()).get("fired", Integer.class) != null) {
 					errors.add(petriNet.getDefaultNodeTable().getRow(n.getSUID()).get("name", String.class) +
 							": fired should not be defined for place");
 				}
 			}
+			// Errors for transitions
 			else if (petriNet.getDefaultNodeTable().getRow(n.getSUID()).get("type", String.class).equals("Transition")) {
+				// Missing fired, no check for non-binary value
 				if (petriNet.getDefaultNodeTable().getRow(n.getSUID()).get("fired", Integer.class) == null) {
 					errors.add(petriNet.getDefaultNodeTable().getRow(n.getSUID()).get("name", String.class) + ": missing fired");
 				}
+				// Tokens defined for a transition even though they shouldn't be
 				if (petriNet.getDefaultNodeTable().getRow(n.getSUID()).get("tokens", Integer.class) != null) {
 					errors.add(petriNet.getDefaultNodeTable().getRow(n.getSUID()).get("name", String.class) +
 							": tokens should not be defined for transition");
+				// Tokens defined for a transition even though they shouldn't be	
 				}
 				if (petriNet.getDefaultNodeTable().getRow(n.getSUID()).get("initial tokens", Integer.class) != null) {
 					errors.add(petriNet.getDefaultNodeTable().getRow(n.getSUID()).get("name", String.class) +
@@ -214,26 +233,32 @@ public class PetriUtils {
 				}
 			}
 		}
+		// Errors for edges
 		for (CyEdge e : cyEdgeArray) {
+			// Weight not defined or less than 1
 			if (petriNet.getDefaultEdgeTable().getRow(e.getSUID()).get("weight", Integer.class) == null ||
 					petriNet.getDefaultEdgeTable().getRow(e.getSUID()).get("weight", Integer.class) < 1) {
 				errors.add(petriNet.getDefaultEdgeTable().getRow(e.getSUID()).get("name", String.class) + ": missing or negative weight");
 			}
+			// Do not give additional error messages for source/target node not having a type defined
 			if (petriNet.getDefaultNodeTable().getRow(e.getSource().getSUID()).get("type", String.class) == null ||
 					petriNet.getDefaultNodeTable().getRow(e.getTarget().getSUID()).get("type", String.class) == null) {
 				continue;
 			}
+			// Edge connects two places
 			else if (petriNet.getDefaultNodeTable().getRow(e.getSource().getSUID()).get("type", String.class).equals("Place")){
 				if (petriNet.getDefaultNodeTable().getRow(e.getTarget().getSUID()).get("type", String.class).equals("Place")){
 					errors.add(petriNet.getDefaultEdgeTable().getRow(e.getSUID()).get("name", String.class) + ": connects two places");
 				}
 			}
+			// Edge connects two transitions
 			else if (petriNet.getDefaultNodeTable().getRow(e.getSource().getSUID()).get("type", String.class).equals("Transition")) {
 				if (petriNet.getDefaultNodeTable().getRow(e.getTarget().getSUID()).get("type", String.class).equals("Transition")) {
 					errors.add(petriNet.getDefaultEdgeTable().getRow(e.getSUID()).get("name", String.class) + ": connects two transitions");
 				}
 			}
 		}
+		// Show errors
 		JFrame f = new JFrame("Errors during verification");
 		String msg = errors.toString().replaceAll(",", System.lineSeparator());
 		msg = msg.replace("[", "").replace("]", "");
@@ -245,9 +270,9 @@ public class PetriUtils {
 	
 	/**
 	 * Fire Petri Net. Goes through all transitions and checks which of them can fired, then does so for those.
-	 * @param cyTransitionArray - Array of transition type nodes
-	 * @param random - randomize firing order
-	 * @param firingMode - synchronous (true) or asynchronous (false) firing
+	 * @param cyTransitionArray Array of transition type nodes
+	 * @param random randomize firing order
+	 * @param firingMode synchronous (true) or asynchronous (false) firing
 	 */
 	public void fire(CyNode[] cyTransitionArray, boolean firingMode, boolean random) {
 		if (random) {
@@ -315,9 +340,9 @@ public class PetriUtils {
 	/**
 	 * Calculates invariants of Petri Net.
 	 * The transitions are represented within the array in REVERSE ORDER.
-	 * @param cyTransitionArray
-	 * @param cyPlaceArray
-	 * @return 
+	 * @param cyTransitionArray CyNode[] containing all transitions
+	 * @param cyPlaceArray CyNode[] containing all places
+	 * @return invariants contains all invariants as Integer[] elements of an ArrayList
 	 */
 	public ArrayList<Integer[]> invar(CyNode[] cyTransitionArray, CyNode[] cyPlaceArray) {
 		Integer[][] incidenceMatrix = new Integer[cyTransitionArray.length][cyPlaceArray.length]; 
@@ -401,56 +426,12 @@ public class PetriUtils {
 				invariants.add(identList.get(m));
 			}
 		}
-		/*for(Integer[] invariant: invariants){
-			String empty = "";
-			Integer current = invariant.length - 1;
-			for (Integer i : invariant){
-				empty += "t" + current.toString() + ": "+ i.toString() + "; ";
-				current--;
-			}
-			JFrame f = new JFrame("Errors during verification");
-			String msg = empty.toString();
-			JOptionPane.showMessageDialog(f, msg);
-		}	*/ // Testing purposes
 		return invariants;
-		/*
-		Integer k = 0;
-		Integer l = 0;
-		while ((k < cyPlaceArray.length) && (l < cyTransitionArray.length)){
-			if (incidenceMatrix[k][l] != 0){
-				for (Integer i = k+1; i<cyPlaceArray.length; i++){
-					if (incidenceMatrix[k][l] * incidenceMatrix[i][l] < 0){
-						for (Integer j=0; j< cyPlaceArray.length; j++){
-							incidenceMatrix[j][i] = incidenceMatrix[j][i] * incidenceMatrix[k][l] + incidenceMatrix[k][i] * incidenceMatrix[j][l];
-							identity[j][i] = identity[j][i] * incidenceMatrix[k][l] + identity[k][i] * incidenceMatrix[j][l];
-						}
-					} else if (incidenceMatrix[k][l] * incidenceMatrix[i][l] > 0){
-						for (Integer j=0; j< cyPlaceArray.length; j++){
-							incidenceMatrix[j][i] = incidenceMatrix[j][i] * incidenceMatrix[k][l] - incidenceMatrix[k][i] * incidenceMatrix[j][l];
-							identity[j][i] = identity[j][i] * incidenceMatrix[k][l] - identity[k][i] * incidenceMatrix[j][l];
-						}
-					}
-				}
-				k++;
-				l++;
-			}
-			else{
-				boolean zeros = true;
-				for(Integer x = l; x<cyTransitionArray.length; x++){
-					if (incidenceMatrix[k][x] != 0){
-						zeros = false;
-					}
-				}
-				if (zeros){
-					
-				}
-				else{
-					l++;
-				}
-			}
-		}*/
 	}
 	
+	/**
+	 * Checks whether network is CTI or not
+	 */
 	public void is_CTI() {
 		int length = 0;
 		for (CyNode n : petriNet.getNodeList()) {	// Get length of array
