@@ -54,7 +54,11 @@ public class PetriPanel extends JPanel implements CytoPanelComponent {
 	private JPanel jPanel;
 	private CyNetwork petriNet;
 	private PetriUtils petriUtils;
-	private PetriTaskFactory PetriTaskFactory;
+	private CreateEdgeTaskFactory createEdgeTaskFactory;
+	private CreateNetworkTaskFactory createNetworkTaskFactory;
+	private CreatePlaceTaskFactory createPlaceTaskFactory;
+	private CreateTransitionTaskFactory createTransitionTaskFactory;
+	private UpdateViewTaskFactory updateViewTaskFactory;
 	private boolean firingMode; // Async = false, Sync = true
 	private boolean random;
 
@@ -101,6 +105,10 @@ public class PetriPanel extends JPanel implements CytoPanelComponent {
 				petriUtils = new PetriUtils(petriNet, cyNetworkViewManagerServiceRef,	// Used for updating views later on
 						cyNetworkViewFactoryServiceRef, visualMappingManagerRef,
 						cyLayoutAlgorithmManagerRef, adapter, visualMappingFunctionFactoryRefd); 
+				createEdgeTaskFactory = new CreateEdgeTaskFactory(cyNetworkViewManagerServiceRef, petriNet);
+				createPlaceTaskFactory = new CreatePlaceTaskFactory(cyNetworkViewManagerServiceRef, petriNet);
+				createTransitionTaskFactory = new CreateTransitionTaskFactory(cyNetworkViewManagerServiceRef, petriNet);
+				updateViewTaskFactory = new UpdateViewTaskFactory(cyNetworkViewManagerServiceRef, petriNet);
 				petriUtils.initializeColumns();
 				petriUtils.createVisualStyle();
 			}
@@ -109,7 +117,7 @@ public class PetriPanel extends JPanel implements CytoPanelComponent {
 		JButton placeBut = new JButton("Create new place");
 		placeBut.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				TaskIterator itr = petriUtils.createPlace();
+				TaskIterator itr = createPlaceTaskFactory.createTaskIterator();
 				adapter.getTaskManager().execute(itr);
 				SynchronousTaskManager<?> synTaskMan = adapter.getCyServiceRegistrar().getService(SynchronousTaskManager.class);
 				synTaskMan.execute(itr);
@@ -119,7 +127,7 @@ public class PetriPanel extends JPanel implements CytoPanelComponent {
 		JButton transBut = new JButton("Create new transition");
 		transBut.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				TaskIterator itr = petriUtils.createTransition();
+				TaskIterator itr = createTransitionTaskFactory.createTaskIterator();
 				adapter.getTaskManager().execute(itr);
 				SynchronousTaskManager<?> synTaskMan = adapter.getCyServiceRegistrar().getService(SynchronousTaskManager.class);
 				synTaskMan.execute(itr);
@@ -129,7 +137,7 @@ public class PetriPanel extends JPanel implements CytoPanelComponent {
 		JButton edgeBut = new JButton("Create new edge");
 		edgeBut.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				TaskIterator itr = petriUtils.createEdge();
+				TaskIterator itr = createEdgeTaskFactory.createTaskIterator();
 				adapter.getTaskManager().execute(itr);
 				SynchronousTaskManager<?> synTaskMan = adapter.getCyServiceRegistrar().getService(SynchronousTaskManager.class);
 				synTaskMan.execute(itr);
@@ -139,7 +147,7 @@ public class PetriPanel extends JPanel implements CytoPanelComponent {
 		JButton viewBut = new JButton("Update Views");
 		viewBut.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				TaskIterator itr = petriUtils.updateView();
+				TaskIterator itr = updateViewTaskFactory.createTaskIterator();
 				adapter.getTaskManager().execute(itr);
 				SynchronousTaskManager<?> synTaskMan = adapter.getCyServiceRegistrar().getService(SynchronousTaskManager.class);
 				synTaskMan.execute(itr);
@@ -158,10 +166,13 @@ public class PetriPanel extends JPanel implements CytoPanelComponent {
 				petriUtils = new PetriUtils(petriNet, cyNetworkViewManagerServiceRef,	 // Used for updating views later on
 						cyNetworkViewFactoryServiceRef, visualMappingManagerRef,
 						cyLayoutAlgorithmManagerRef, adapter, visualMappingFunctionFactoryRefd);
-				PetriTaskFactory = new PetriTaskFactory(cyNetworkManagerServiceRef,	// Fill Petri Net with nodes and apply default views/layout
-						cyNetworkNamingServiceRef,cyNetworkViewManagerServiceRef,
-						eventHelperServiceRef,petriNet, petriUtils);
-				TaskIterator petri = PetriTaskFactory.createTaskIterator();
+				createNetworkTaskFactory = new CreateNetworkTaskFactory(cyNetworkManagerServiceRef, cyNetworkNamingServiceRef,
+						cyNetworkViewManagerServiceRef, eventHelperServiceRef, petriNet, petriUtils);
+				createEdgeTaskFactory = new CreateEdgeTaskFactory(cyNetworkViewManagerServiceRef, petriNet);
+				createPlaceTaskFactory = new CreatePlaceTaskFactory(cyNetworkViewManagerServiceRef, petriNet);
+				createTransitionTaskFactory = new CreateTransitionTaskFactory(cyNetworkViewManagerServiceRef, petriNet);
+				updateViewTaskFactory = new UpdateViewTaskFactory(cyNetworkViewManagerServiceRef, petriNet);
+				TaskIterator petri = createNetworkTaskFactory.createTaskIterator();
 				adapter.getTaskManager().execute(petri);
 				SynchronousTaskManager<?> synTaskMan = adapter.getCyServiceRegistrar().getService(SynchronousTaskManager.class);
 				synTaskMan.execute(petri);
@@ -179,7 +190,7 @@ public class PetriPanel extends JPanel implements CytoPanelComponent {
 		resetBut.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				petriUtils.reset();
-				TaskIterator itr = petriUtils.updateView();
+				TaskIterator itr = updateViewTaskFactory.createTaskIterator();
 				adapter.getTaskManager().execute(itr);
 				SynchronousTaskManager<?> synTaskMan = adapter.getCyServiceRegistrar().getService(SynchronousTaskManager.class);
 				synTaskMan.execute(itr);
@@ -250,7 +261,7 @@ public class PetriPanel extends JPanel implements CytoPanelComponent {
 					}
 					invarHolder.addItem(empty.substring(0, empty.lastIndexOf(",")));
 				}
-				TaskIterator itr = petriUtils.updateView();
+				TaskIterator itr = updateViewTaskFactory.createTaskIterator();
 				adapter.getTaskManager().execute(itr);
 				SynchronousTaskManager<?> synTaskMan = adapter.getCyServiceRegistrar().getService(SynchronousTaskManager.class);
 				synTaskMan.execute(itr);
@@ -268,7 +279,7 @@ public class PetriPanel extends JPanel implements CytoPanelComponent {
 				for (int i=0; i<Integer.parseInt(times.getText()); i++) {				// Fire Petri Net x times
 					petriUtils.fire(cyTransitionArray, firingMode, random);
 				}
-				TaskIterator itr = petriUtils.updateView();
+				TaskIterator itr = updateViewTaskFactory.createTaskIterator();
 				adapter.getTaskManager().execute(itr);
 				SynchronousTaskManager<?> synTaskMan = adapter.getCyServiceRegistrar().getService(SynchronousTaskManager.class);
 				synTaskMan.execute(itr);

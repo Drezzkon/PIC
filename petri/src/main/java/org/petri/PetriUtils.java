@@ -490,36 +490,4 @@ public class PetriUtils {
 	    sc.close();	
 	    return invalid;
 	}
-	
-	/**
-	 * @return TaskIterator for a ViewUpdaterTask
-	 * Similar to AbstractTaskFactory.CreateTaskIterator
-	 */
-	public TaskIterator updateView() {
-		return new TaskIterator(new ViewUpdaterTask(petriNet, cnvm));
-	}
-
-	/**
-	 * @return TaskIterator for a CreateTransitionTask
-	 * Similar to AbstractTaskFactory.CreateTaskIterator
-	 */
-	public TaskIterator createTransition() {
-		return new TaskIterator(new CreateTransitionTask(petriNet, cnvm));
-	}
-
-	/**
-	 * @return TaskIterator for a CreatePlaceTask
-	 * Similar to AbstractTaskFactory.CreateTaskIterator
-	 */
-	public TaskIterator createPlace() {
-		return new TaskIterator(new CreatePlaceTask(petriNet, cnvm));
-	}
-
-	/**
-	 * @return TaskIterator for a CreateEdgeTask
-	 * Similar to AbstractTaskFactory.CreateTaskIterator
-	 */
-	public TaskIterator createEdge() {
-		return new TaskIterator(new CreateEdgeTask(petriNet, cnvm));
-	}
 }
