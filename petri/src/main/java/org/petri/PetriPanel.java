@@ -67,7 +67,6 @@ public class PetriPanel extends JPanel implements CytoPanelComponent {
 	 * @param cyNetworkViewManagerServiceRef CyNetworkViewManager
 	 * @param eventHelperServiceRef EventHelper
 	 * @param cyLayoutAlgorithmManagerRef CyLayoutAlgorithmManager
-	 * @param synchronousTaskManagerRef SynchronousTaskManager
 	 * @param visualMappingManagerRef VisualMappingManager
 	 * @param visualMappingFunctionFactoryRefd VisualMappingFunctionFactory for discrete mappings
 	 * @param adapter CyAppAdapter
@@ -79,7 +78,6 @@ public class PetriPanel extends JPanel implements CytoPanelComponent {
 			final CyNetworkViewManager cyNetworkViewManagerServiceRef, 
 			final CyEventHelper eventHelperServiceRef,
 			final CyLayoutAlgorithmManager cyLayoutAlgorithmManagerRef,
-			final SynchronousTaskManager<?> synchronousTaskManagerRef,
 			final VisualMappingManager visualMappingManagerRef,
 			final VisualMappingFunctionFactory visualMappingFunctionFactoryRefd,
 			final CyAppAdapter adapter) {
@@ -219,7 +217,7 @@ public class PetriPanel extends JPanel implements CytoPanelComponent {
 				}
 			}
 		});
-		JButton invarBut = new JButton("Calculate T-Invariants");	// Button for calculating invariants
+		JButton invarBut = new JButton("Calculate min. T-Invariants");	// Button for calculating invariants
 		invarBut.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				JFrame f = new JFrame("Warning");

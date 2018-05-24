@@ -1,7 +1,5 @@
 package org.petri;
 
-import java.util.Scanner;
-
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 
@@ -49,17 +47,9 @@ public class CreateEdgeTask extends AbstractTask {
 			String msg = "Missing input values";
 			JOptionPane.showMessageDialog(f, msg);
 			return;
-		}
-		boolean invalidWeight; // Check for non-int weights
-	    Scanner sc = new Scanner(weight.trim());
-	    if(!sc.hasNextInt(10)) {
-	    	invalidWeight = true;
-	    }
-	    else {
-	    sc.nextInt(10);
-	    invalidWeight = sc.hasNext();
-	    }
-	    sc.close();
+		} 
+		// Check for non-int weights
+		boolean invalidWeight = PetriUtils.check_int(weight);
 		if (invalidWeight || Integer.parseInt(weight) < 1) { // non-int weights or weight < 1
 			JFrame f = new JFrame("Error during edge creation");
 			String msg = "Invalid weight";

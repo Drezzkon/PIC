@@ -51,8 +51,6 @@ public class PetriTask extends AbstractTask {
 	 * Afterwards apply default visual style and layout for Petri Nets.
 	 */
 	public void run(TaskMonitor monitor) throws Exception {
-		petriNet.getRow(petriNet).set(CyNetwork.NAME,
-			      namingUtil.getSuggestedNetworkTitle("Petri Net"));
 		petriUtils.initializeColumns();
 		String fileName = inpFile.getName(); 	// Get extension of input file
 		String extension = "";
@@ -65,7 +63,8 @@ public class PetriTask extends AbstractTask {
 		else {
 			throw new Exception("Could not find extension"); // No extension could be found (no "." in fileName)
 		}
-
+		petriNet.getRow(petriNet).set(CyNetwork.NAME,
+			      namingUtil.getSuggestedNetworkTitle(fileName.substring(0, dot)));
 		eventHelper.flushPayloadEvents();
 		petriUtils.createVisualStyle();
 

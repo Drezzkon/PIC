@@ -1,8 +1,6 @@
 package org.petri;
 
 import java.awt.Color;
-import java.util.Scanner;
-
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 
@@ -47,16 +45,7 @@ public class CreatePlaceTask extends AbstractTask {
 			JOptionPane.showMessageDialog(f, msg);
 			return;
 		}
-		boolean invalidTokens; // Check for non-int token values
-	    Scanner sc = new Scanner(tokens.trim());
-	    if(!sc.hasNextInt(10)) {
-	    	invalidTokens = true;
-	    }
-	    else {
-	    sc.nextInt(10);
-	    invalidTokens = sc.hasNext();
-	    }
-	    sc.close();
+		boolean invalidTokens = PetriUtils.check_int(tokens); // Check for non-int token values
 		if (invalidTokens || Integer.parseInt(tokens) < 0) { // non-int or negative token values
 			JFrame f = new JFrame("Error during place creation");
 			String msg = "Invalid token amount";

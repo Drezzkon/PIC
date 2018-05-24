@@ -6,6 +6,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Scanner;
 import java.util.Set;
 
 import javax.swing.JFrame;
@@ -195,17 +196,17 @@ public class PetriUtils {
 				errors.add(petriNet.getDefaultNodeTable().getRow(n.getSUID()).get("name", String.class) + ": missing type");
 			}
 			// Wrong type
-			else if (!petriNet.getDefaultNodeTable().getRow(n.getSUID()).get("type", String.class).equals("Place") ||
+			else if (!petriNet.getDefaultNodeTable().getRow(n.getSUID()).get("type", String.class).equals("Place") &&
 					!petriNet.getDefaultNodeTable().getRow(n.getSUID()).get("type", String.class).equals("Transition")) {
 				errors.add(petriNet.getDefaultNodeTable().getRow(n.getSUID()).get("name", String.class)+ ": wrong type");
 			}
 			// Errors for places
 			else if (petriNet.getDefaultNodeTable().getRow(n.getSUID()).get("type", String.class).equals("Place")) {
-				// Missing tokens, no check for non-int
+				// Missing tokens, no check for non-int because of columns type
 				if (petriNet.getDefaultNodeTable().getRow(n.getSUID()).get("tokens", Integer.class) == null) {
 					errors.add(petriNet.getDefaultNodeTable().getRow(n.getSUID()).get("name", String.class) + ": missing tokens");
 				}
-				// Missing initial tokens, no check for non-int
+				// Missing initial tokens, no check for non-int because of columns type
 				if (petriNet.getDefaultNodeTable().getRow(n.getSUID()).get("initial tokens", Integer.class) == null) {
 					errors.add(petriNet.getDefaultNodeTable().getRow(n.getSUID()).get("name", String.class) + ": missing initial tokens");				
 				}
@@ -225,7 +226,7 @@ public class PetriUtils {
 				if (petriNet.getDefaultNodeTable().getRow(n.getSUID()).get("tokens", Integer.class) != null) {
 					errors.add(petriNet.getDefaultNodeTable().getRow(n.getSUID()).get("name", String.class) +
 							": tokens should not be defined for transition");
-				// Tokens defined for a transition even though they shouldn't be	
+				// Initial Tokens defined for a transition even though they shouldn't be	
 				}
 				if (petriNet.getDefaultNodeTable().getRow(n.getSUID()).get("initial tokens", Integer.class) != null) {
 					errors.add(petriNet.getDefaultNodeTable().getRow(n.getSUID()).get("name", String.class) +
@@ -245,17 +246,10 @@ public class PetriUtils {
 					petriNet.getDefaultNodeTable().getRow(e.getTarget().getSUID()).get("type", String.class) == null) {
 				continue;
 			}
-			// Edge connects two places
-			else if (petriNet.getDefaultNodeTable().getRow(e.getSource().getSUID()).get("type", String.class).equals("Place")){
-				if (petriNet.getDefaultNodeTable().getRow(e.getTarget().getSUID()).get("type", String.class).equals("Place")){
-					errors.add(petriNet.getDefaultEdgeTable().getRow(e.getSUID()).get("name", String.class) + ": connects two places");
-				}
-			}
-			// Edge connects two transitions
-			else if (petriNet.getDefaultNodeTable().getRow(e.getSource().getSUID()).get("type", String.class).equals("Transition")) {
-				if (petriNet.getDefaultNodeTable().getRow(e.getTarget().getSUID()).get("type", String.class).equals("Transition")) {
-					errors.add(petriNet.getDefaultEdgeTable().getRow(e.getSUID()).get("name", String.class) + ": connects two transitions");
-				}
+			// The nodes connected by this edge have the same type
+			else if (petriNet.getDefaultNodeTable().getRow(e.getSource().getSUID()).get("type", String.class).equals(
+					petriNet.getDefaultNodeTable().getRow(e.getTarget().getSUID()).get("type", String.class))) {
+				errors.add(petriNet.getDefaultEdgeTable().getRow(e.getSUID()).get("name", String.class) + ": source and target node have same type");
 			}
 		}
 		// Show errors
@@ -481,6 +475,20 @@ public class PetriUtils {
 			}
 			JOptionPane.showMessageDialog(f, msg);
 		}
+	}
+	
+	public static boolean check_int(String toCheck) {
+		boolean invalid = false;
+		Scanner sc = new Scanner(toCheck.trim());
+	    if(!sc.hasNextInt(10)) {
+	    	invalid = true;
+	    }
+	    else {
+	    sc.nextInt(10);
+	    invalid = sc.hasNext();
+	    }
+	    sc.close();	
+	    return invalid;
 	}
 	
 	/**

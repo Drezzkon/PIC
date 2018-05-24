@@ -57,7 +57,7 @@ public class FileUtils {
 	 * @throws Exception Errors during loading or incorrect format
 	 */
 	public void readSBML(CyNetwork petriNet, Document doc) throws Exception {
-		//Generating Nodes for Places
+		// Generating Nodes for Places
 		NodeList listOfPlaces = doc.getElementsByTagName("species");
 		CyNode [] cyPlaceArray = new CyNode[listOfPlaces.getLength()];
 		for (int i = 0; i<listOfPlaces.getLength(); i++) {
