@@ -255,7 +255,7 @@ public class PetriPanel extends JPanel implements CytoPanelComponent {
 		invarBut.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				JFrame f = new JFrame("Warning");
-				int choice = JOptionPane.showConfirmDialog(f, "Do you really want to calculate invariants?");
+				int choice = JOptionPane.showConfirmDialog(f, "Calculating invariants will assume all edgeweights to be 1 and will take an extremely long time without you being able to exit it if your Petri net is really big.");
 				if (choice != JOptionPane.YES_OPTION) {
 					return;
 				}
