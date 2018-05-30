@@ -59,6 +59,7 @@ public class PetriPanel extends JPanel implements CytoPanelComponent {
 	private CreatePlaceTaskFactory createPlaceTaskFactory;
 	private CreateTransitionTaskFactory createTransitionTaskFactory;
 	private UpdateViewTaskFactory updateViewTaskFactory;
+	private ExportTaskFactory exportTaskFactory;
 	private boolean firingMode; // Async = false, Sync = true
 	private boolean random;
 
@@ -97,6 +98,11 @@ public class PetriPanel extends JPanel implements CytoPanelComponent {
 		createBut.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				if (petriNet != null) {						// Destroy previously loaded Petri Net, only one active at a time
+					JFrame f = new JFrame("Warning");
+					int choice = JOptionPane.showConfirmDialog(f, "Creating a new Petri net will destroy the previous one. Continue?");
+					if (choice != JOptionPane.YES_OPTION) {
+						return;
+					}
 					invarHolder.removeAllItems();
 					cyNetworkManagerServiceRef.destroyNetwork(petriNet);
 				}
@@ -109,6 +115,7 @@ public class PetriPanel extends JPanel implements CytoPanelComponent {
 				createPlaceTaskFactory = new CreatePlaceTaskFactory(cyNetworkViewManagerServiceRef, petriNet);
 				createTransitionTaskFactory = new CreateTransitionTaskFactory(cyNetworkViewManagerServiceRef, petriNet);
 				updateViewTaskFactory = new UpdateViewTaskFactory(cyNetworkViewManagerServiceRef, petriNet);
+				exportTaskFactory = new ExportTaskFactory(petriNet, petriUtils.getPlaces(), petriUtils.getTransitions());
 				petriUtils.initializeColumns();
 				petriUtils.createVisualStyle();
 			}
@@ -158,6 +165,11 @@ public class PetriPanel extends JPanel implements CytoPanelComponent {
 		loadBut.addActionListener(new ActionListener() {	
 			public void actionPerformed(ActionEvent e) {
 				if (petriNet != null) {						// Destroy previously loaded Petri Net, only one active at a time
+					JFrame f = new JFrame("Warning");
+					int choice = JOptionPane.showConfirmDialog(f, "Loading a new Petri net will destroy the previous one. Continue?");
+					if (choice != JOptionPane.YES_OPTION) {
+						return;
+					}
 					invarHolder.removeAllItems();
 					cyNetworkManagerServiceRef.destroyNetwork(petriNet);
 				}
@@ -172,6 +184,7 @@ public class PetriPanel extends JPanel implements CytoPanelComponent {
 				createPlaceTaskFactory = new CreatePlaceTaskFactory(cyNetworkViewManagerServiceRef, petriNet);
 				createTransitionTaskFactory = new CreateTransitionTaskFactory(cyNetworkViewManagerServiceRef, petriNet);
 				updateViewTaskFactory = new UpdateViewTaskFactory(cyNetworkViewManagerServiceRef, petriNet);
+				exportTaskFactory = new ExportTaskFactory(petriNet, petriUtils.getPlaces(), petriUtils.getTransitions());
 				TaskIterator petri = createNetworkTaskFactory.createTaskIterator();
 				adapter.getTaskManager().execute(petri);
 				SynchronousTaskManager<?> synTaskMan = adapter.getCyServiceRegistrar().getService(SynchronousTaskManager.class);
@@ -179,6 +192,16 @@ public class PetriPanel extends JPanel implements CytoPanelComponent {
 			}
 		});
 		top.add(loadBut);
+		JButton expoBut = new JButton("Export PetriNet");
+		expoBut.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				TaskIterator itr = exportTaskFactory.createTaskIterator();
+				adapter.getTaskManager().execute(itr);
+				SynchronousTaskManager<?> synTaskMan = adapter.getCyServiceRegistrar().getService(SynchronousTaskManager.class);
+				synTaskMan.execute(itr);
+			}
+		});
+		top.add(expoBut);
 		JButton veriBut = new JButton("Verify PetriNet");
 		veriBut.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {

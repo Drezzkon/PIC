@@ -52,6 +52,8 @@ public class FileUtils {
 
 	/**
 	 * Loads Petri Net from SBML format.
+	 * Place attributes constant and boundaryCondition are ignored.
+	 * Transition attribute reversible is ignored, stoichiometry expected to be int
 	 * @param petriNet Network to be used to represent Petri Net
 	 * @param doc XML-Document used to extract information
 	 * @throws Exception Errors during loading or incorrect format
@@ -63,6 +65,18 @@ public class FileUtils {
 		for (int i = 0; i<listOfPlaces.getLength(); i++) {
 			cyPlaceArray[i] = petriNet.addNode();
 			Element element = (Element) listOfPlaces.item(i);
+			if (element.hasAttribute("initialAmount")) {
+				petriNet.getDefaultNodeTable().getRow(cyPlaceArray[i].getSUID()).set("tokens", Integer.parseInt(element.getAttribute("initialAmount")));
+				petriNet.getDefaultNodeTable().getRow(cyPlaceArray[i].getSUID()).set("initial tokens", Integer.parseInt(element.getAttribute("initialAmount")));
+			}
+			else if (element.hasAttribute("initialConcentration")) {
+				petriNet.getDefaultNodeTable().getRow(cyPlaceArray[i].getSUID()).set("tokens", Integer.parseInt(element.getAttribute("initialConcentration")));
+				petriNet.getDefaultNodeTable().getRow(cyPlaceArray[i].getSUID()).set("initial tokens", Integer.parseInt(element.getAttribute("initialConcentration")));
+			}
+			else {
+				petriNet.getDefaultNodeTable().getRow(cyPlaceArray[i].getSUID()).set("tokens", 0);
+				petriNet.getDefaultNodeTable().getRow(cyPlaceArray[i].getSUID()).set("initial tokens", 0);
+			}
 			petriNet.getDefaultNodeTable().getRow(cyPlaceArray[i].getSUID()).set("internal id", "p"+Integer.toString(i));
 			petriNet.getDefaultNodeTable().getRow(cyPlaceArray[i].getSUID()).set("id", element.getAttribute("id"));
 			petriNet.getDefaultNodeTable().getRow(cyPlaceArray[i].getSUID()).set("tokens", Integer.parseInt(element.getAttribute("initialAmount")));

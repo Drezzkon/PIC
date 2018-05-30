@@ -339,6 +339,7 @@ public class PetriUtils {
 	 * @return invariants contains all invariants as Integer[] elements of an ArrayList
 	 */
 	public ArrayList<Integer[]> invar(CyNode[] cyTransitionArray, CyNode[] cyPlaceArray) {
+		//Creating incidenceMatrix
 		Integer[][] incidenceMatrix = new Integer[cyTransitionArray.length][cyPlaceArray.length]; 
 		for (Integer m = 0; m < cyTransitionArray.length; m++) {
 			for (Integer n = 0; n < cyPlaceArray.length; n++){
@@ -358,6 +359,7 @@ public class PetriUtils {
 			}
 		}
 		ArrayList<Integer[]> incMatList = new ArrayList<Integer[]>(Arrays.asList(incidenceMatrix));
+		//Creating identity matrix
 		Integer[][] identity = new Integer[cyTransitionArray.length][cyTransitionArray.length];
 		for (Integer n = 0; n < cyTransitionArray.length; n++){
 			for (Integer n2 = 0; n2 < cyTransitionArray.length; n2++){
@@ -370,6 +372,7 @@ public class PetriUtils {
 			}
 		}
 		ArrayList<Integer[]> identList = new ArrayList<Integer[]>(Arrays.asList(identity));
+		//Iterating over all columns/places to find incoming and outgoing edges that nullify each other
 		for (Integer p = cyPlaceArray.length - 1; p > -1; p--){
 			ArrayList<Integer> posPositions = new ArrayList<Integer>();
 			ArrayList<Integer> negPositions = new ArrayList<Integer>();
@@ -380,6 +383,7 @@ public class PetriUtils {
 					negPositions.add(t);
 				}
 			}
+			//Calculating the new Lines in the incidence and the identity matrix according to the prior found edges and their according transitions
 			ArrayList<Integer[]> newLines = new ArrayList<Integer[]>();
 			ArrayList<Integer[]> newIdentLines = new ArrayList<Integer[]>();
 			for (Integer pos = 0; pos<posPositions.size(); pos++){
@@ -396,6 +400,7 @@ public class PetriUtils {
 					newIdentLines.add(newIdentLine);
 				}
 			}
+			//Deleting the used rows 
 			ArrayList<Integer> positionsToDelete = new ArrayList<Integer>();
 			positionsToDelete.addAll(negPositions);
 			positionsToDelete.addAll(posPositions);
@@ -407,6 +412,7 @@ public class PetriUtils {
 			incMatList.addAll(newLines);
 			identList.addAll(newIdentLines);
 		}
+		//Filtering the invariants out of the finished and processed identity matrix
 		ArrayList<Integer[]> invariants = new ArrayList<Integer[]>();
 		for (Integer m = 0; m<incMatList.size(); m++){
 			Boolean isZero = true;
@@ -438,6 +444,7 @@ public class PetriUtils {
 		for (int i=0; i<length; i++) {
 			cti[i] = 0;
 		}
+		//iterating over all invariants and reversing them to the correct order, if transition is covered set its according integer in cti to 1
 		for (Integer[] invar : invars) {
 			Integer[] revInvar = new Integer[invar.length];
 			for (int i=1; i<=invar.length; i++) {
@@ -450,6 +457,7 @@ public class PetriUtils {
 			}
 		}
 		boolean all_cti = true;
+		//iterate over the created Integerlist cti and check if all transitions are covered, if not set all_cti to false and add the missing transition to the not_cti list
 		ArrayList<Integer> not_cti = new ArrayList<Integer>();
 		for (int i=0; i<cti.length; i++) {
 			if (cti[i] == 0) {
@@ -457,6 +465,7 @@ public class PetriUtils {
 				not_cti.add(i);
 			}
 		}
+		//returning the information to the user 
 		JFrame f = new JFrame("Check for CTI");
 		if (all_cti) {
 			JOptionPane.showMessageDialog(f, "Network is CTI");
