@@ -67,7 +67,7 @@ public class PetriUtils {
 		this.clam = clam;
 		this.adapter = adapter;
 		this.vmffd = vmffd;
-		this.invars = new ArrayList<Integer[]>();
+		this.invars = new ArrayList<Integer[]>(); // holds the minimal t-invariants, should user decide to have them calculated
 	}
 
 	/**
@@ -318,7 +318,7 @@ public class PetriUtils {
 	}
 	
 	/**
-	 * Resets state of Petri Net to the beginning. Should probably just define a getter for cyPlaceArray.
+	 * Resets state of Petri net to default values (tokens = initial tokens f.a. places, fired = 0 f.a. transitions)
 	 */
 	public void reset() {
 		CyNode[] cyTransitionArray = getTransitions();
@@ -486,7 +486,12 @@ public class PetriUtils {
 		}
 	}
 	
-	public static boolean check_int(String toCheck) {
+	/**
+	 * Checks, whether a string is NOT an integer
+	 * @param toCheck string to check
+	 * @return true, if not an int, false if int
+	 */
+	public static boolean not_int(String toCheck) {
 		boolean invalid = false;
 		Scanner sc = new Scanner(toCheck.trim());
 	    if(!sc.hasNextInt(10)) {

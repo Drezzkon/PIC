@@ -29,7 +29,7 @@ public class CreatePlaceTask extends AbstractTask {
 	public String tokens;
 
 	/**
-	 * 	 * Constructor
+	 * Constructor
 	 * @param petriNet Petri Net within which edge is to be created
 	 * @param cnvm Used to update view of newly created edge
 	 */
@@ -38,6 +38,9 @@ public class CreatePlaceTask extends AbstractTask {
 		this.cnvm = cnvm;
 	}
 
+	/**
+	 * Check whether all input values are correct. If so, create a new place using them.
+	 */
 	public void run(TaskMonitor taskMonitor) throws Exception {
 		if (name.equals("") || tokens.equals("")) { // Empty input values
 			JFrame f = new JFrame("Error during place creation");
@@ -45,7 +48,7 @@ public class CreatePlaceTask extends AbstractTask {
 			JOptionPane.showMessageDialog(f, msg);
 			return;
 		}
-		boolean invalidTokens = PetriUtils.check_int(tokens); // Check for non-int token values
+		boolean invalidTokens = PetriUtils.not_int(tokens); // Check for non-int token values
 		if (invalidTokens || Integer.parseInt(tokens) < 0) { // non-int or negative token values
 			JFrame f = new JFrame("Error during place creation");
 			String msg = "Invalid token amount";

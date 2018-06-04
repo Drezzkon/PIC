@@ -6,7 +6,7 @@ import org.cytoscape.work.AbstractTaskFactory;
 import org.cytoscape.work.TaskIterator;
 
 /**
- * Constructor for PetriTasks
+ * Factory for CreateTransitionTasks
  * @author M. Gehrmann, M. Kirchner
  *
  */

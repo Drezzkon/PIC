@@ -41,6 +41,9 @@ public class CreateEdgeTask extends AbstractTask {
 		this.cnvm = cnvm;
 	}
 
+	/**
+	 * Check whether all input values are correct. If so, create a new edge using them.
+	 */
 	public void run(TaskMonitor taskMonitor) throws Exception {
 		if (sourceID.equals("") || targetID.equals("") || weight.equals("")) { // Check for empty values
 			JFrame f = new JFrame("Error during edge creation");
@@ -49,7 +52,7 @@ public class CreateEdgeTask extends AbstractTask {
 			return;
 		} 
 		// Check for non-int weights
-		boolean invalidWeight = PetriUtils.check_int(weight);
+		boolean invalidWeight = PetriUtils.not_int(weight);
 		if (invalidWeight || Integer.parseInt(weight) < 1) { // non-int weights or weight < 1
 			JFrame f = new JFrame("Error during edge creation");
 			String msg = "Invalid weight";

@@ -6,7 +6,7 @@ import org.cytoscape.work.AbstractTaskFactory;
 import org.cytoscape.work.TaskIterator;
 
 /**
- * Constructor for PetriTasks
+ * Factory for UpdateViewTasks
  * @author M. Gehrmann, M. Kirchner
  *
  */
@@ -16,22 +16,14 @@ public class UpdateViewTaskFactory extends AbstractTaskFactory{
 	
 	/**
 	 * Constructor
-	 * @param netMgr CyNetworkManager
-	 * @param namingUtil CyNetworkNaming
 	 * @param cnvm CyNetworkViewManager
-	 * @param eventHelper EventHelper
 	 * @param petriNet Petri Net to be filled with data
-	 * @param petriUtils Utilities for Petri Net
 	 */
 	public UpdateViewTaskFactory(final CyNetworkViewManager cnvm,final CyNetwork petriNet) {
 		this.cnvm = cnvm;
 		this.petriNet = petriNet;
 	}
-	
 
-	/**
-	 * 
-	 */
 	public TaskIterator createTaskIterator(){
 		return new TaskIterator(new UpdateViewTask(petriNet, cnvm));
 	}	

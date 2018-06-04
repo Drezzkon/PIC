@@ -115,7 +115,7 @@ public class PetriPanel extends JPanel implements CytoPanelComponent {
 				createPlaceTaskFactory = new CreatePlaceTaskFactory(cyNetworkViewManagerServiceRef, petriNet);
 				createTransitionTaskFactory = new CreateTransitionTaskFactory(cyNetworkViewManagerServiceRef, petriNet);
 				updateViewTaskFactory = new UpdateViewTaskFactory(cyNetworkViewManagerServiceRef, petriNet);
-				exportTaskFactory = new ExportTaskFactory(petriNet, petriUtils.getPlaces(), petriUtils.getTransitions());
+				exportTaskFactory = new ExportTaskFactory(petriNet, petriUtils);
 				petriUtils.initializeColumns();
 				petriUtils.createVisualStyle();
 			}
@@ -124,6 +124,11 @@ public class PetriPanel extends JPanel implements CytoPanelComponent {
 		JButton placeBut = new JButton("Create new place");
 		placeBut.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
+				if (petriNet == null) {
+					JFrame f = new JFrame("Error");
+					JOptionPane.showMessageDialog(f, "No Petri net found.");
+					return;
+				}
 				TaskIterator itr = createPlaceTaskFactory.createTaskIterator();
 				adapter.getTaskManager().execute(itr);
 				SynchronousTaskManager<?> synTaskMan = adapter.getCyServiceRegistrar().getService(SynchronousTaskManager.class);
@@ -134,6 +139,11 @@ public class PetriPanel extends JPanel implements CytoPanelComponent {
 		JButton transBut = new JButton("Create new transition");
 		transBut.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
+				if (petriNet == null) {
+					JFrame f = new JFrame("Error");
+					JOptionPane.showMessageDialog(f, "No Petri net found.");
+					return;
+				}
 				TaskIterator itr = createTransitionTaskFactory.createTaskIterator();
 				adapter.getTaskManager().execute(itr);
 				SynchronousTaskManager<?> synTaskMan = adapter.getCyServiceRegistrar().getService(SynchronousTaskManager.class);
@@ -144,6 +154,11 @@ public class PetriPanel extends JPanel implements CytoPanelComponent {
 		JButton edgeBut = new JButton("Create new edge");
 		edgeBut.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
+				if (petriNet == null) {
+					JFrame f = new JFrame("Error");
+					JOptionPane.showMessageDialog(f, "No Petri net found.");
+					return;
+				}
 				TaskIterator itr = createEdgeTaskFactory.createTaskIterator();
 				adapter.getTaskManager().execute(itr);
 				SynchronousTaskManager<?> synTaskMan = adapter.getCyServiceRegistrar().getService(SynchronousTaskManager.class);
@@ -154,6 +169,11 @@ public class PetriPanel extends JPanel implements CytoPanelComponent {
 		JButton viewBut = new JButton("Update Views");
 		viewBut.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
+				if (petriNet == null) {
+					JFrame f = new JFrame("Error");
+					JOptionPane.showMessageDialog(f, "No Petri net found.");
+					return;
+				}
 				TaskIterator itr = updateViewTaskFactory.createTaskIterator();
 				adapter.getTaskManager().execute(itr);
 				SynchronousTaskManager<?> synTaskMan = adapter.getCyServiceRegistrar().getService(SynchronousTaskManager.class);
@@ -179,12 +199,12 @@ public class PetriPanel extends JPanel implements CytoPanelComponent {
 						cyNetworkViewFactoryServiceRef, visualMappingManagerRef,
 						cyLayoutAlgorithmManagerRef, adapter, visualMappingFunctionFactoryRefd);
 				createNetworkTaskFactory = new CreateNetworkTaskFactory(cyNetworkManagerServiceRef, cyNetworkNamingServiceRef,
-						cyNetworkViewManagerServiceRef, eventHelperServiceRef, petriNet, petriUtils);
+						eventHelperServiceRef, petriNet, petriUtils);
 				createEdgeTaskFactory = new CreateEdgeTaskFactory(cyNetworkViewManagerServiceRef, petriNet);
 				createPlaceTaskFactory = new CreatePlaceTaskFactory(cyNetworkViewManagerServiceRef, petriNet);
 				createTransitionTaskFactory = new CreateTransitionTaskFactory(cyNetworkViewManagerServiceRef, petriNet);
 				updateViewTaskFactory = new UpdateViewTaskFactory(cyNetworkViewManagerServiceRef, petriNet);
-				exportTaskFactory = new ExportTaskFactory(petriNet, petriUtils.getPlaces(), petriUtils.getTransitions());
+				exportTaskFactory = new ExportTaskFactory(petriNet, petriUtils);
 				TaskIterator petri = createNetworkTaskFactory.createTaskIterator();
 				adapter.getTaskManager().execute(petri);
 				SynchronousTaskManager<?> synTaskMan = adapter.getCyServiceRegistrar().getService(SynchronousTaskManager.class);
@@ -195,6 +215,11 @@ public class PetriPanel extends JPanel implements CytoPanelComponent {
 		JButton expoBut = new JButton("Export PetriNet");
 		expoBut.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
+				if (petriNet == null) {
+					JFrame f = new JFrame("Error");
+					JOptionPane.showMessageDialog(f, "No Petri net found.");
+					return;
+				}
 				TaskIterator itr = exportTaskFactory.createTaskIterator();
 				adapter.getTaskManager().execute(itr);
 				SynchronousTaskManager<?> synTaskMan = adapter.getCyServiceRegistrar().getService(SynchronousTaskManager.class);
@@ -205,6 +230,11 @@ public class PetriPanel extends JPanel implements CytoPanelComponent {
 		JButton veriBut = new JButton("Verify PetriNet");
 		veriBut.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
+				if (petriNet == null) {
+					JFrame f = new JFrame("Error");
+					JOptionPane.showMessageDialog(f, "No Petri net found.");
+					return;
+				}
 				petriUtils.verifyNet();
 			}
 		});
@@ -212,6 +242,11 @@ public class PetriPanel extends JPanel implements CytoPanelComponent {
 		JButton resetBut = new JButton("Reset Petri Net");	// Button for resetting tokens and fired
 		resetBut.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
+				if (petriNet == null) {
+					JFrame f = new JFrame("Error");
+					JOptionPane.showMessageDialog(f, "No Petri net found.");
+					return;
+				}
 				petriUtils.reset();
 				TaskIterator itr = updateViewTaskFactory.createTaskIterator();
 				adapter.getTaskManager().execute(itr);
@@ -254,6 +289,11 @@ public class PetriPanel extends JPanel implements CytoPanelComponent {
 		JButton invarBut = new JButton("Calculate min. T-Invariants");	// Button for calculating invariants
 		invarBut.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
+				if (petriNet == null) {
+					JFrame f = new JFrame("Error");
+					JOptionPane.showMessageDialog(f, "No Petri net found.");
+					return;
+				}
 				JFrame f = new JFrame("Warning");
 				int choice = JOptionPane.showConfirmDialog(f, "Calculating invariants will assume all edgeweights to be 1 and will take an extremely long time without you being able to exit it if your Petri net is really big.");
 				if (choice != JOptionPane.YES_OPTION) {
@@ -298,6 +338,11 @@ public class PetriPanel extends JPanel implements CytoPanelComponent {
 		JButton fireBut = new JButton("Fire Petri Net"); 		// Button for firing the Petri Net
 		fireBut.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
+				if (petriNet == null) {
+					JFrame f = new JFrame("Error");
+					JOptionPane.showMessageDialog(f, "No Petri net found.");
+					return;
+				}
 				CyNode[] cyTransitionArray = petriUtils.getTransitions();
 				for (int i=0; i<Integer.parseInt(times.getText()); i++) {				// Fire Petri Net x times
 					petriUtils.fire(cyTransitionArray, firingMode, random);

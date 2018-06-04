@@ -3,6 +3,8 @@ package org.petri;
 import java.io.File;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -23,21 +25,37 @@ import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
+/**
+ * Task to export a Petri net to a new file.
+ * @author M. Gehrmann, M. Kirchner
+ */
 public class ExportTask extends AbstractTask {
 	
 	private CyNetwork petriNet;
 	private CyNode[] cyPlaceArray;
 	private CyNode[] cyTransitionArray;
-	@Tunable(description="Choose a ExportLocation", groups="Nodes")
+	@Tunable(description="Choose an export location", groups="Nodes")
 	public File outputFile;
 	
-	
+	/**
+	 * Constructor
+	 * @param petriNet Petri net to be exported
+	 * @param cyPlaceArray Array of CyNodes containing all places of petriNet
+	 * @param cyTransitionArray Array of CyNodes containing all transitions of petriNet
+	 */
 	public ExportTask(CyNetwork petriNet, CyNode[] cyPlaceArray, CyNode[] cyTransitionArray) {
 		this.petriNet = petriNet;
-		this.cyPlaceArray = cyPlaceArray;
-		this.cyTransitionArray = cyTransitionArray;
+		List <CyNode> cyList = Arrays.asList(cyPlaceArray);
+		Collections.reverse(cyList);
+		this.cyPlaceArray = (CyNode[]) cyList.toArray();
+		cyList = Arrays.asList(cyTransitionArray);
+		Collections.reverse(cyList);
+		this.cyTransitionArray = (CyNode[]) cyList.toArray();
 	}
 
+	/**
+	 * Export the Petri net to a file as chosen by the user
+	 */
 	public void run(TaskMonitor taskMonitor) throws Exception {
 		DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
 		DocumentBuilder docBuilder = docFactory.newDocumentBuilder();

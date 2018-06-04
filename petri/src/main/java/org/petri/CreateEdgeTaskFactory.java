@@ -6,7 +6,7 @@ import org.cytoscape.work.AbstractTaskFactory;
 import org.cytoscape.work.TaskIterator;
 
 /**
- * Constructor for PetriTasks
+ * Factory for CreateEdgeTasks
  * @author M. Gehrmann, M. Kirchner
  *
  */
@@ -28,10 +28,6 @@ public class CreateEdgeTaskFactory extends AbstractTaskFactory{
 		this.petriNet = petriNet;
 	}
 	
-
-	/**
-	 * 
-	 */
 	public TaskIterator createTaskIterator(){
 		return new TaskIterator(new CreateEdgeTask(petriNet, cnvm));
 	}	

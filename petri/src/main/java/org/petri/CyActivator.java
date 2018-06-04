@@ -29,7 +29,7 @@ public class CyActivator extends AbstractCyActivator {
 	}
 
 	/**
-	 * Starts the bundle
+	 * Starts the bundle and registers petriPanel
 	 */
 	public void start(BundleContext bc) {
 		CyAppAdapter adapter = getService(bc, CyAppAdapter.class);

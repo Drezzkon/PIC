@@ -11,7 +11,7 @@ import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
 
 /**
- * Task for updating view of Petri Net after firing
+ * Task for updating view of Petri Net after changes to its components
  * @author M. Gehrmann, M. Kirchner
  *
  */

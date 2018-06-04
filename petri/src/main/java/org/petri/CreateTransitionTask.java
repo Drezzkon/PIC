@@ -37,6 +37,9 @@ public class CreateTransitionTask extends AbstractTask {
 		this.cnvm = cnvm;
 	}
 
+	/**
+	 * Check whether all input values are correct. If so, create a new transition using them.
+	 */
 	public void run(TaskMonitor taskMonitor) throws Exception {
 		if (name.equals("")) { // empty input value
 			JFrame f = new JFrame("Error during transition creation");
