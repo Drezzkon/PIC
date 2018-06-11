@@ -338,7 +338,7 @@ public class PetriUtils {
 	 * @param cyPlaceArray CyNode[] containing all places
 	 * @return invariants contains all invariants as Integer[] elements of an ArrayList
 	 */
-	public ArrayList<Integer[]> invar(CyNode[] cyTransitionArray, CyNode[] cyPlaceArray) {
+/*	public ArrayList<Integer[]> invar(CyNode[] cyTransitionArray, CyNode[] cyPlaceArray) {
 		//Creating incidenceMatrix
 		Integer[][] incidenceMatrix = new Integer[cyTransitionArray.length][cyPlaceArray.length]; 
 		for (Integer m = 0; m < cyTransitionArray.length; m++) {
@@ -427,8 +427,8 @@ public class PetriUtils {
 			}
 		}
 		return invariants;
-	}
-	
+	}*/
+
 	/**
 	 * Checks whether network is CTI or not
 	 */

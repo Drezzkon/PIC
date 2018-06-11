@@ -8,7 +8,7 @@ import java.awt.Label;
 import java.awt.TextField;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.ArrayList;
+//import java.util.ArrayList;
 
 import javax.swing.ButtonGroup;
 import javax.swing.Icon;
@@ -94,7 +94,7 @@ public class PetriPanel extends JPanel implements CytoPanelComponent {
 		top.setLayout(new GridLayout(0,1));
 		top.add(new Label("Control Panel for Petri Net App"));
 		final JComboBox<String> invarHolder = new JComboBox<String>();
-		JButton createBut = new JButton("Create new Petri Net");
+		JButton createBut = new JButton("Create new Petri net");
 		createBut.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				if (petriNet != null) {						// Destroy previously loaded Petri Net, only one active at a time
@@ -166,7 +166,7 @@ public class PetriPanel extends JPanel implements CytoPanelComponent {
 			}
 		});
 		top.add(edgeBut);
-		JButton viewBut = new JButton("Update Views");
+		JButton viewBut = new JButton("Update views");
 		viewBut.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				if (petriNet == null) {
@@ -181,7 +181,7 @@ public class PetriPanel extends JPanel implements CytoPanelComponent {
 			}
 		});
 		top.add(viewBut);
-		JButton loadBut = new JButton("Load Petri Net");		// Button for loading new Petri Nets
+		JButton loadBut = new JButton("Load Petri net");		// Button for loading new Petri Nets
 		loadBut.addActionListener(new ActionListener() {	
 			public void actionPerformed(ActionEvent e) {
 				if (petriNet != null) {						// Destroy previously loaded Petri Net, only one active at a time
@@ -212,7 +212,7 @@ public class PetriPanel extends JPanel implements CytoPanelComponent {
 			}
 		});
 		top.add(loadBut);
-		JButton expoBut = new JButton("Export PetriNet");
+		JButton expoBut = new JButton("Export Petri net");
 		expoBut.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				if (petriNet == null) {
@@ -227,7 +227,7 @@ public class PetriPanel extends JPanel implements CytoPanelComponent {
 			}
 		});
 		top.add(expoBut);
-		JButton veriBut = new JButton("Verify PetriNet");
+		JButton veriBut = new JButton("Verify Petri net");
 		veriBut.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				if (petriNet == null) {
@@ -239,7 +239,7 @@ public class PetriPanel extends JPanel implements CytoPanelComponent {
 			}
 		});
 		top.add(veriBut);
-		JButton resetBut = new JButton("Reset Petri Net");	// Button for resetting tokens and fired
+		JButton resetBut = new JButton("Reset Petri net");	// Button for resetting tokens and fired
 		resetBut.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				if (petriNet == null) {
@@ -286,7 +286,7 @@ public class PetriPanel extends JPanel implements CytoPanelComponent {
 				}
 			}
 		});
-		JButton invarBut = new JButton("Calculate min. T-Invariants");	// Button for calculating invariants
+		/*JButton invarBut = new JButton("Calculate min. T-Invariants");	// Button for calculating invariants
 		invarBut.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				if (petriNet == null) {
@@ -331,11 +331,11 @@ public class PetriPanel extends JPanel implements CytoPanelComponent {
 				petriUtils.is_CTI();
 			}
 		});
-		top.add(invarBut);
+		top.add(invarBut);*/
 		top.add(new Label("How often do you want to fire?"));
 		final TextField times = new TextField("1");			// Used to determine how often to fire on button click
 		top.add(times);
-		JButton fireBut = new JButton("Fire Petri Net"); 		// Button for firing the Petri Net
+		JButton fireBut = new JButton("Fire Petri net"); 		// Button for firing the Petri Net
 		fireBut.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				if (petriNet == null) {
@@ -373,13 +373,14 @@ public class PetriPanel extends JPanel implements CytoPanelComponent {
 				firingMode = false;
 			}
 		});
-		random = false;
+		random = true;
 		JCheckBox rndSel = new JCheckBox("Randomize firing order");
 		rndSel.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				random = !random;
 			}
 		});
+		rndSel.setSelected(true);
 		ButtonGroup frOpt = new ButtonGroup();
 		frOpt.add(radSync);
 		frOpt.add(radAsync);
