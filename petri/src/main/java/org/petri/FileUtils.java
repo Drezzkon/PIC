@@ -22,8 +22,8 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 /**
- * Used for loading Petri Nets from different input formats.
- * Supported Formats:
+ * Used for loading Petri nets  and invariants from different input formats.
+ * Supported formats for Petri nets:
  * 	- sbml
  *  - kgml
  * 	- pnt
@@ -31,11 +31,11 @@ import org.w3c.dom.NodeList;
  *  - metatool.dat
  *  - reactionlist
  *  
- *  For formats where weight of arcs is not given, a default value
- *  of 1 is assumed. Similarly, if only an ID is given, but no name,
- *  the ID will also double as a nodes name. Furthermore, if no
- *  amount of tokens is specified, it will be defaulted to 0.
- *  All of these values can then be manually edited in Cytoscape.
+ * For formats where weight of arcs is not given, a default value
+ * of 1 is assumed. Similarly, if only an ID is given, but no name,
+ * the ID will also double as a nodes name. Furthermore, if no
+ * amount of tokens is specified, it will be defaulted to 0.
+ * All of these values can then be manually edited in Cytoscape.
  * @author M. Gehrmann, M. Kirchner
  *
  */
@@ -51,7 +51,7 @@ public class FileUtils {
 	}
 
 	/**
-	 * Loads Petri Net from SBML format.
+	 * Loads Petri net from SBML format.
 	 * Place attributes constant and boundaryCondition are ignored.
 	 * Transition attribute reversible is ignored, stoichiometry expected to be int
 	 * @param petriNet Network to be used to represent Petri Net
@@ -153,7 +153,7 @@ public class FileUtils {
 	}
 
 	/**
-	 * Loads Petri Net from KGML format.
+	 * Loads Petri net from KGML format.
 	 * @param petriNet Network to be used to represent Petri Net
 	 * @param doc XML-Document used to extract information
 	 * @throws Exception Errors during loading or incorrect format
@@ -241,7 +241,7 @@ public class FileUtils {
 	}
 	
 	/**
-	 * Loads Petri Net from PNT format.
+	 * Loads Petri net from PNT format.
 	 * @param petriNet Network to be used to represent Petri Net
 	 * @param content Content of input file
 	 * @throws Exception Errors during loading or incorrect format
@@ -624,5 +624,9 @@ public class FileUtils {
 				throw new Exception("Wrong extension!");
 			}
 		}
+	}
+
+	public static void loadInvars(String sutoringu) {
+		// Read invars here, one Jörg gives us data anyway
 	}
 }
