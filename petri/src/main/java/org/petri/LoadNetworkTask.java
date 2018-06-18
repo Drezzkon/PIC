@@ -15,7 +15,7 @@ import org.cytoscape.work.Tunable;
  * @author M. Gehrmann, M. Kirchner
  *
  */
-public class CreateNetworkTask extends AbstractTask {
+public class LoadNetworkTask extends AbstractTask {
 
 	private final CyNetworkManager netMgr;
 	private final CyNetworkNaming namingUtil;
@@ -33,7 +33,7 @@ public class CreateNetworkTask extends AbstractTask {
 	 * @param petriNet Petri Net to be filled with data
 	 * @param petriUtils Utilities for Petri Net
 	 */
-	public CreateNetworkTask(final CyNetworkManager netMgr, final CyNetworkNaming namingUtil,
+	public LoadNetworkTask(final CyNetworkManager netMgr, final CyNetworkNaming namingUtil,
 			final CyEventHelper eventHelper, CyNetwork petriNet, PetriUtils petriUtils){
 		this.netMgr = netMgr;
 		this.namingUtil = namingUtil;

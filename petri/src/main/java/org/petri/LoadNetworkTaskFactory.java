@@ -12,7 +12,7 @@ import org.cytoscape.work.TaskIterator;
  * @author M. Gehrmann, M. Kirchner
  *
  */
-public class CreateNetworkTaskFactory extends AbstractTaskFactory{
+public class LoadNetworkTaskFactory extends AbstractTaskFactory{
 	private final CyNetworkManager netMgr;
 	private final CyNetworkNaming namingUtil; 
 	private final CyEventHelper eventHelper;
@@ -27,7 +27,7 @@ public class CreateNetworkTaskFactory extends AbstractTaskFactory{
 	 * @param petriNet Petri net to be filled with data
 	 * @param petriUtils Utilities for Petri net
 	 */
-	public CreateNetworkTaskFactory(final CyNetworkManager netMgr, final CyNetworkNaming namingUtil,
+	public LoadNetworkTaskFactory(final CyNetworkManager netMgr, final CyNetworkNaming namingUtil,
 			final CyEventHelper eventHelper, final CyNetwork petriNet, final PetriUtils petriUtils){
 		this.netMgr = netMgr;
 		this.namingUtil = namingUtil;
@@ -41,6 +41,6 @@ public class CreateNetworkTaskFactory extends AbstractTaskFactory{
 	 * 
 	 */
 	public TaskIterator createTaskIterator(){
-		return new TaskIterator(new CreateNetworkTask(netMgr, namingUtil, eventHelper, petriNet, petriUtils));
+		return new TaskIterator(new LoadNetworkTask(netMgr, namingUtil, eventHelper, petriNet, petriUtils));
 	}	
 }

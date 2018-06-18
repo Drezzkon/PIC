@@ -278,18 +278,38 @@ public class FileUtils {
 			String placeEdgesSplit[] = edgesSplit[i].split(",");
 			String incomingEdges[] = placeEdgesSplit[0].split("\\s+");
 			String outgoingEdges[] = placeEdgesSplit[1].split("\\s+");
+			petriNet.getDefaultNodeTable().getRow(cyPlaceArray[i - 1].getSUID()).set("initial tokens", Integer.parseInt(incomingEdges[2]));
+			petriNet.getDefaultNodeTable().getRow(cyPlaceArray[i - 1].getSUID()).set("tokens", Integer.parseInt(incomingEdges[2]));
 			for (int x = 3; x < incomingEdges.length; x++){
-				edges.add(petriNet.addEdge(cyTransitionArray[Integer.parseInt(incomingEdges[x])], cyPlaceArray[i - 1], true));
+				if (incomingEdges[x].contains(":")){
+					CyEdge e = petriNet.addEdge(cyTransitionArray[Integer.parseInt(incomingEdges[x].substring(0, incomingEdges[x].length() - 1))], cyPlaceArray[i - 1], true);
+					petriNet.getDefaultEdgeTable().getRow(e.getSUID()).set("weight", Integer.parseInt(incomingEdges[x + 1]));
+					edges.add(e);
+					x++;
+				}
+				else{
+					edges.add(petriNet.addEdge(cyTransitionArray[Integer.parseInt(incomingEdges[x])], cyPlaceArray[i - 1], true));
+				}
 			}
 			for (int x = 1; x < outgoingEdges.length; x++){
-				edges.add(petriNet.addEdge(cyPlaceArray[i - 1], cyTransitionArray[Integer.parseInt(outgoingEdges[x])], true));
+				if(outgoingEdges[x].contains(":")){
+					CyEdge e = petriNet.addEdge(cyPlaceArray[i - 1] , cyTransitionArray[Integer.parseInt(outgoingEdges[x].substring(0, outgoingEdges[x].length() - 1))], true);
+					petriNet.getDefaultEdgeTable().getRow(e.getSUID()).set("weight", Integer.parseInt(outgoingEdges[x + 1]));
+					edges.add(e);
+					x++;
+				}
+				else{
+					edges.add(petriNet.addEdge(cyPlaceArray[i - 1], cyTransitionArray[Integer.parseInt(outgoingEdges[x])], true));
+				}
 			}
 		}
 		int numOfEdges = 0;
 		for (CyEdge e : edges){
 			petriNet.getDefaultEdgeTable().getRow(e.getSUID()).set("name", petriNet.getDefaultNodeTable().getRow(e.getSource().getSUID()).get("name", String.class)+"->"+petriNet.getDefaultNodeTable().getRow(e.getTarget().getSUID()).get("name", String.class));
-			petriNet.getDefaultEdgeTable().getRow(e.getSUID()).set("weight", 0);
 			petriNet.getDefaultEdgeTable().getRow(e.getSUID()).set("internal id", "e"+Integer.toString(numOfEdges));
+			if (petriNet.getDefaultEdgeTable().getRow(e.getSUID()).get("weight", Integer.class) == null){
+				petriNet.getDefaultEdgeTable().getRow(e.getSUID()).set("weight", 1);
+			}
 			numOfEdges++;
 		}
 	}

@@ -55,7 +55,8 @@ public class PetriPanel extends JPanel implements CytoPanelComponent {
 	private CyNetwork petriNet;
 	private PetriUtils petriUtils;
 	private CreateEdgeTaskFactory createEdgeTaskFactory;
-	private CreateNetworkTaskFactory createNetworkTaskFactory;
+	private LoadNetworkTaskFactory loadNetworkTaskFactory;
+	private LoadInvarTaskFactory loadInvarTaskFactory;
 	private CreatePlaceTaskFactory createPlaceTaskFactory;
 	private CreateTransitionTaskFactory createTransitionTaskFactory;
 	private UpdateViewTaskFactory updateViewTaskFactory;
@@ -94,6 +95,7 @@ public class PetriPanel extends JPanel implements CytoPanelComponent {
 		top.setLayout(new GridLayout(0,1));
 		top.add(new Label("Control Panel for Petri Net App"));
 		final JComboBox<String> invarHolder = new JComboBox<String>();
+		loadInvarTaskFactory = new LoadInvarTaskFactory(invarHolder);
 		JButton createBut = new JButton("Create new Petri net");
 		createBut.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -198,20 +200,35 @@ public class PetriPanel extends JPanel implements CytoPanelComponent {
 				petriUtils = new PetriUtils(petriNet, cyNetworkViewManagerServiceRef,	 // Used for updating views later on
 						cyNetworkViewFactoryServiceRef, visualMappingManagerRef,
 						cyLayoutAlgorithmManagerRef, adapter, visualMappingFunctionFactoryRefd);
-				createNetworkTaskFactory = new CreateNetworkTaskFactory(cyNetworkManagerServiceRef, cyNetworkNamingServiceRef,
+				loadNetworkTaskFactory = new LoadNetworkTaskFactory(cyNetworkManagerServiceRef, cyNetworkNamingServiceRef,
 						eventHelperServiceRef, petriNet, petriUtils);
 				createEdgeTaskFactory = new CreateEdgeTaskFactory(cyNetworkViewManagerServiceRef, petriNet);
 				createPlaceTaskFactory = new CreatePlaceTaskFactory(cyNetworkViewManagerServiceRef, petriNet);
 				createTransitionTaskFactory = new CreateTransitionTaskFactory(cyNetworkViewManagerServiceRef, petriNet);
 				updateViewTaskFactory = new UpdateViewTaskFactory(cyNetworkViewManagerServiceRef, petriNet);
 				exportTaskFactory = new ExportTaskFactory(petriNet, petriUtils);
-				TaskIterator petri = createNetworkTaskFactory.createTaskIterator();
+				TaskIterator petri = loadNetworkTaskFactory.createTaskIterator();
 				adapter.getTaskManager().execute(petri);
 				SynchronousTaskManager<?> synTaskMan = adapter.getCyServiceRegistrar().getService(SynchronousTaskManager.class);
 				synTaskMan.execute(petri);
 			}
 		});
 		top.add(loadBut);
+		JButton loadInvarBut = new JButton("Load invariants");
+		loadInvarBut.addActionListener(new ActionListener () {
+			public void actionPerformed(ActionEvent e) {
+				if (petriNet == null) {
+					JFrame f = new JFrame("Error");
+					JOptionPane.showMessageDialog(f, "No Petri net found.");
+					return;
+				}
+				TaskIterator itr = loadInvarTaskFactory.createTaskIterator();
+				adapter.getTaskManager().execute(itr);
+				SynchronousTaskManager<?> synTaskMan = adapter.getCyServiceRegistrar().getService(SynchronousTaskManager.class);
+				synTaskMan.execute(itr);
+			}
+		});
+		top.add(loadInvarBut);
 		JButton expoBut = new JButton("Export Petri net");
 		expoBut.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -260,7 +277,7 @@ public class PetriPanel extends JPanel implements CytoPanelComponent {
 				if (invarHolder.getItemCount() == 0) { // Do not update on resetting the container
 					return;
 				}
-				Integer[] invar = petriUtils.invars.get(invarHolder.getSelectedIndex());
+				String invar = (String) invarHolder.getSelectedItem();
 				CyNetworkView [] cnvs = new CyNetworkView[1];
 				cyNetworkViewManagerServiceRef.getNetworkViews(petriNet).toArray(cnvs);
 				CyNetworkView cnv = cnvs[0];
@@ -268,19 +285,28 @@ public class PetriPanel extends JPanel implements CytoPanelComponent {
 					edgeview.clearValueLock(BasicVisualLexicon.EDGE_PAINT);
 				}
 				// Gather all transitions belonging to invariant and paint their edges
-				for (int i=1; i<=invar.length; i++) {
-					if(invar[invar.length-i] == 1) {
-						CyNode trans = null;
-						for (CyNode n : petriNet.getNodeList()) {
-							if (petriNet.getDefaultNodeTable().getRow(n.getSUID()).get("internal id", String.class).equals("t"+Integer.toString(i-1))) {
-								trans = n;
-								break;
-							}
+				String[] transitions = invar.split(", ");
+				for (String tName : transitions) {
+					boolean once = true;
+					CyNode trans = null;
+					if (tName.contains(" ")) {
+						once = false;
+						tName = tName.split(" ")[1];
+					}
+					for (CyNode n : petriNet.getNodeList()) {
+						if (petriNet.getDefaultNodeTable().getRow(n.getSUID()).get("name", String.class).equals(tName)) {
+							trans = n;
+							break;
 						}
-						Iterable<CyEdge>edges = petriNet.getAdjacentEdgeIterable(trans, CyEdge.Type.DIRECTED);
-						for (CyEdge edge :edges) {
-							View<CyEdge> edgeview = cnv.getEdgeView(edge);
+					}
+					Iterable<CyEdge>edges = petriNet.getAdjacentEdgeIterable(trans, CyEdge.Type.DIRECTED);
+					for (CyEdge edge : edges) {
+						View<CyEdge> edgeview = cnv.getEdgeView(edge);
+						if (once) {
 							edgeview.setLockedValue(BasicVisualLexicon.EDGE_PAINT, Color.CYAN);
+						}
+						else {
+							edgeview.setLockedValue(BasicVisualLexicon.EDGE_PAINT, Color.ORANGE);
 						}
 					}
 				}
