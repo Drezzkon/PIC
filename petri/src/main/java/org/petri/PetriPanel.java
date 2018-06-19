@@ -8,7 +8,6 @@ import java.awt.Label;
 import java.awt.TextField;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-//import java.util.ArrayList;
 
 import javax.swing.ButtonGroup;
 import javax.swing.Icon;
@@ -60,6 +59,7 @@ public class PetriPanel extends JPanel implements CytoPanelComponent {
 	private CreatePlaceTaskFactory createPlaceTaskFactory;
 	private CreateTransitionTaskFactory createTransitionTaskFactory;
 	private UpdateViewTaskFactory updateViewTaskFactory;
+	private CheckRealizeTaskFactory checkRealizeTaskFactory;
 	private ExportTaskFactory exportTaskFactory;
 	private boolean firingMode; // Async = false, Sync = true
 	private boolean random;
@@ -299,6 +299,10 @@ public class PetriPanel extends JPanel implements CytoPanelComponent {
 							break;
 						}
 					}
+					if (trans == null) {
+						JFrame f = new JFrame("Error during colouring of invariants");
+						JOptionPane.showMessageDialog(f, "Couldn't find transition " + tName);
+					}
 					Iterable<CyEdge>edges = petriNet.getAdjacentEdgeIterable(trans, CyEdge.Type.DIRECTED);
 					for (CyEdge edge : edges) {
 						View<CyEdge> edgeview = cnv.getEdgeView(edge);
@@ -312,7 +316,7 @@ public class PetriPanel extends JPanel implements CytoPanelComponent {
 				}
 			}
 		});
-		/*JButton invarBut = new JButton("Calculate min. T-Invariants");	// Button for calculating invariants
+		/*JButton invarBut = new JButton("Compute min. T-Invariants");	// Button for calculating invariants
 		invarBut.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				if (petriNet == null) {
@@ -321,7 +325,7 @@ public class PetriPanel extends JPanel implements CytoPanelComponent {
 					return;
 				}
 				JFrame f = new JFrame("Warning");
-				int choice = JOptionPane.showConfirmDialog(f, "Calculating invariants will assume all edgeweights to be 1 and will take an extremely long time without you being able to exit it if your Petri net is really big.");
+				int choice = JOptionPane.showConfirmDialog(f, "Computing invariants will take an extremely long time without you being able to exit it if your Petri net is really big.");
 				if (choice != JOptionPane.YES_OPTION) {
 					return;
 				}
@@ -358,6 +362,13 @@ public class PetriPanel extends JPanel implements CytoPanelComponent {
 			}
 		});
 		top.add(invarBut);*/
+		JButton checkRealize = new JButton("Check Realizability");
+		checkRealize.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				checkRealizeTaskFactory = new CheckRealizeTaskFactory(petriNet, invarHolder);
+				checkRealizeTaskFactory.createTaskIterator();
+			}
+		});
 		top.add(new Label("How often do you want to fire?"));
 		final TextField times = new TextField("1");			// Used to determine how often to fire on button click
 		top.add(times);

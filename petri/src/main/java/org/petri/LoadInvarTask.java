@@ -8,12 +8,21 @@ import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
 
+/**
+ * Task to load invariants from a file
+ * @author M. Gehrmann
+ *
+ */
 public class LoadInvarTask extends AbstractTask {
 
 	@Tunable(description="Choose a file", params="input=true")
 	public File inpFile; // Ask file for loading invariants
 	private JComboBox<String> invarHolder;
 
+	/**
+	 * Constructor
+	 * @param invarHolder Container for invariants
+	 */
 	public LoadInvarTask(JComboBox<String> invarHolder) {
 		this.invarHolder = invarHolder;
 	}

@@ -6,8 +6,8 @@ import org.cytoscape.work.AbstractTaskFactory;
 import org.cytoscape.work.TaskIterator;
 
 /**
- * Factory for CreateNetworkTasks
- * @author M. Gehrmann, M. Kirchner
+ * Factory for LoadInvarTasks
+ * @author M. Gehrmann
  *
  */
 public class LoadInvarTaskFactory extends AbstractTaskFactory{	
@@ -21,7 +21,6 @@ public class LoadInvarTaskFactory extends AbstractTaskFactory{
 		this.invarHolder = invarHolder;
 	}
 	
-
 	/**
 	 * 
 	 */
