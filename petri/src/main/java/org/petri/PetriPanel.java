@@ -222,6 +222,14 @@ public class PetriPanel extends JPanel implements CytoPanelComponent {
 					JOptionPane.showMessageDialog(f, "No Petri net found.");
 					return;
 				}
+				// Reset InvarHolder on reading new file
+				invarHolder.removeAllItems();
+				CyNetworkView [] cnvs = new CyNetworkView[1];
+				cyNetworkViewManagerServiceRef.getNetworkViews(petriNet).toArray(cnvs);
+				CyNetworkView cnv = cnvs[0];
+				for (View <CyEdge> edgeview : cnv.getEdgeViews()){ // Clear locked edge colours from previously selected invariant
+					edgeview.clearValueLock(BasicVisualLexicon.EDGE_PAINT);
+				}
 				TaskIterator itr = loadInvarTaskFactory.createTaskIterator();
 				adapter.getTaskManager().execute(itr);
 				SynchronousTaskManager<?> synTaskMan = adapter.getCyServiceRegistrar().getService(SynchronousTaskManager.class);
@@ -365,10 +373,14 @@ public class PetriPanel extends JPanel implements CytoPanelComponent {
 		JButton checkRealize = new JButton("Check Realizability");
 		checkRealize.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				checkRealizeTaskFactory = new CheckRealizeTaskFactory(petriNet, invarHolder);
-				checkRealizeTaskFactory.createTaskIterator();
+				checkRealizeTaskFactory = new CheckRealizeTaskFactory(petriNet, invarHolder, petriUtils);
+				TaskIterator itr = checkRealizeTaskFactory.createTaskIterator();
+				adapter.getTaskManager().execute(itr);
+				SynchronousTaskManager<?> synTaskMan = adapter.getCyServiceRegistrar().getService(SynchronousTaskManager.class);
+				synTaskMan.execute(itr);
 			}
 		});
+		top.add(checkRealize);
 		top.add(new Label("How often do you want to fire?"));
 		final TextField times = new TextField("1");			// Used to determine how often to fire on button click
 		top.add(times);

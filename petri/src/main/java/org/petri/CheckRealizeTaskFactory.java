@@ -14,18 +14,20 @@ import org.cytoscape.work.TaskIterator;
 public class CheckRealizeTaskFactory extends AbstractTaskFactory{
 	private final CyNetwork petriNet;
 	private final JComboBox<String> invarHolder;
+	private final PetriUtils petriUtils;
 	
 	/**
 	 * Constructor
 	 * @param petriNet Petri net currently being worked on
 	 * @param invarHolder Container for invariants
 	 */
-	public CheckRealizeTaskFactory(final CyNetwork petriNet, JComboBox<String> invarHolder) {
+	public CheckRealizeTaskFactory(final CyNetwork petriNet, JComboBox<String> invarHolder, PetriUtils petriUtils) {
 		this.petriNet = petriNet;
 		this.invarHolder = invarHolder;
+		this.petriUtils = petriUtils;
 	}
 	
 	public TaskIterator createTaskIterator(){
-		return new TaskIterator(new CheckRealizeTask(petriNet, invarHolder));
+		return new TaskIterator(new CheckRealizeTask(petriNet, invarHolder, petriUtils));
 	}	
 }

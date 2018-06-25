@@ -2,9 +2,9 @@ package org.petri;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
-
 import javax.swing.JComboBox;
+import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
@@ -19,19 +19,21 @@ import org.cytoscape.work.Tunable;
  *
  */
 public class CheckRealizeTask extends AbstractTask {
-	@Tunable(description="Yes to check all invariants, No to check only currently selected invariant")
+	@Tunable(description="Find all permutations instead of just one")
 	public boolean all;
 	private CyNetwork petriNet;
 	private JComboBox<String> invarHolder;
+	private PetriUtils petriUtils;
 
 	/**
 	 * Constructor
 	 * @param petriNet Petri net currently being worked on
 	 * @param invarHolder Container for invariants
 	 */
-	public CheckRealizeTask(CyNetwork petriNet, JComboBox<String> invarHolder) {
+	public CheckRealizeTask(CyNetwork petriNet, JComboBox<String> invarHolder, PetriUtils petriUtils) {
 		this.petriNet = petriNet;
 		this.invarHolder = invarHolder;
+		this.petriUtils = petriUtils;
 	}
 	
 	public void run(TaskMonitor taskMonitor) throws Exception {
@@ -58,9 +60,8 @@ public class CheckRealizeTask extends AbstractTask {
 		// Extract transitions from string by name
 		String[] transitionArray = invar.split(", ");
 		ArrayList<CyNode> transitions = new ArrayList<CyNode>();
-		HashMap<String, String> times = new HashMap<String, String>(); // Use this to store how often transitions are fired
+		HashMap<String, Integer> times = new HashMap<String, Integer>(); // Use this to store how often transitions are fired
 		String amt;
-		HashSet<CyNode> places = new HashSet<CyNode>();
 		HashMap<String, Integer> tokens = new HashMap<String, Integer>();
 		for (String trans : transitionArray) {
 			amt = "1"; // Default
@@ -68,28 +69,28 @@ public class CheckRealizeTask extends AbstractTask {
 				amt = trans.split(" ")[0];
 				trans = trans.split(" ")[1];
 			}
-			times.put(trans, amt);
+			times.put(trans, Integer.parseInt(amt));
 			for (CyNode n : petriNet.getNodeList()) {
 				if (petriNet.getDefaultNodeTable().getRow(n.getSUID()).get("name", String.class).equals(trans)) {
 					transitions.add(n);
 					// Gather all places influenced by the invariant
 					// Need to get the marking and map it
 					for (CyEdge e : petriNet.getAdjacentEdgeIterable(n, CyEdge.Type.INCOMING)) {
-						places.add(e.getSource());
 						tokens.put(petriNet.getDefaultNodeTable().getRow(e.getSource().getSUID()).get("name", String.class),
 								petriNet.getDefaultNodeTable().getRow(e.getSource().getSUID()).get("tokens",Integer.class));
 					}
 					for (CyEdge e : petriNet.getAdjacentEdgeIterable(n, CyEdge.Type.OUTGOING)) {
-						places.add(e.getTarget());
 						tokens.put(petriNet.getDefaultNodeTable().getRow(e.getTarget().getSUID()).get("name", String.class),
 								petriNet.getDefaultNodeTable().getRow(e.getTarget().getSUID()).get("tokens",Integer.class));
 					}
 					break;
 				}
 			}
-			// Now we have all transitions in an ArrayList and the marking mapped to tokens
-			// Anyway, I need to generate ALL permutations next, not just ONE. Should probably do this by Branch and Bound?
-			// Would probably require a separate function then, should implement that in PetriUtils, I guess?
 		}
+		ArrayList<String> realize = new ArrayList<String>();
+		petriUtils.namingsense(transitions, new ArrayList<String>(), times, tokens, realize, all);
+		// Display realizable permutations ... kind of want to get this into petriPanel to get rid of TaskMonitor
+		JFrame f = new JFrame("Realizable Permutations");
+		JOptionPane.showMessageDialog(f, realize);
 	}
 }

@@ -4,6 +4,7 @@ import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Scanner;
@@ -503,5 +504,55 @@ public class PetriUtils {
 	    }
 	    sc.close();	
 	    return invalid;
+	}
+
+	@SuppressWarnings("unchecked")
+	public void namingsense(ArrayList<CyNode> transitions, ArrayList<String> used,
+			HashMap<String, Integer> times, HashMap<String, Integer> tokens, ArrayList<String> realize, boolean all) {
+		for (CyNode trans : transitions) {
+			// Check if transitions can fire
+			boolean canFire = true;
+			for (CyEdge e : petriNet.getAdjacentEdgeIterable(trans, CyEdge.Type.INCOMING)) {
+				if (tokens.get(petriNet.getDefaultNodeTable().getRow(e.getSource().getSUID()).get("name", String.class))
+						< petriNet.getDefaultEdgeTable().getRow(e.getSUID()).get("weight", Integer.class)) {
+					canFire = false;
+					break;
+				}
+			}
+			if (!canFire) {
+				continue;
+			}
+			// Copy transitions and times for recursion
+			ArrayList<CyNode> newTransitions = (ArrayList<CyNode>) transitions.clone(); // Not sure if shallow copy is enough
+			HashMap<String, Integer> newTimes = (HashMap<String, Integer>) times.clone();
+			int count = times.get(petriNet.getDefaultNodeTable().getRow(trans.getSUID()).get("name", String.class));
+			// Lower count in newTimes or remove trans from newTransitions
+			if (count > 1){
+				newTimes.put(petriNet.getDefaultNodeTable().getRow(trans.getSUID()).get("name", String.class), count-1);
+			}
+			else {
+				newTransitions.remove(trans);
+			}
+			// Copy tokens for recursion
+			HashMap<String, Integer> newTokens = (HashMap<String, Integer>) tokens.clone();
+			// Add tokens for outgoing edges
+			for (CyEdge e : petriNet.getAdjacentEdgeIterable(trans, CyEdge.Type.OUTGOING)) {
+				newTokens.put(petriNet.getDefaultNodeTable().getRow(e.getTarget().getSUID()).get("name", String.class),
+						tokens.get(petriNet.getDefaultNodeTable().getRow(e.getTarget().getSUID()).get("name", String.class)) +
+						petriNet.getDefaultEdgeTable().getRow(e.getSUID()).get("weight", Integer.class));
+			}
+			ArrayList<String> newUsed = (ArrayList<String>) used.clone();
+			newUsed.add(petriNet.getDefaultNodeTable().getRow(trans.getSUID()).get("name", String.class));
+			if (newTransitions.isEmpty()) { // Recursion is done, leaf has been reached
+				realize.add(newUsed.toString());
+			}
+			else { // Recursion Step, Fix this to search only for one.
+				namingsense(newTransitions, newUsed, newTimes, newTokens, realize, all);
+				//if (!all && !realize.isEmpty()) {
+				//	return;
+				//}
+			}
+		}
+		return;
 	}
 }
