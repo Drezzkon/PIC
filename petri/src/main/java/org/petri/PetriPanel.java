@@ -378,6 +378,15 @@ public class PetriPanel extends JPanel implements CytoPanelComponent {
 				adapter.getTaskManager().execute(itr);
 				SynchronousTaskManager<?> synTaskMan = adapter.getCyServiceRegistrar().getService(SynchronousTaskManager.class);
 				synTaskMan.execute(itr);
+				JFrame f = new JFrame("Realizable Permutations");
+				JOptionPane.showMessageDialog(f, petriUtils.realize);
+				JOptionPane.showMessageDialog(f, "Pre-Output");
+				String output = "";
+				for (String perm : petriUtils.realize) {
+					output += perm + "\n";	
+				}
+				JOptionPane.showMessageDialog(f, "Perms done");
+				JOptionPane.showMessageDialog(f, output);
 			}
 		});
 		top.add(checkRealize);

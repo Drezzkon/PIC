@@ -48,6 +48,7 @@ public class PetriUtils {
 	private CyAppAdapter adapter;
 	private VisualMappingFunctionFactory vmffd;
 	protected ArrayList<Integer[]> invars;
+	protected ArrayList<String> realize;
 	
 	/**
 	 * Constructor
@@ -69,6 +70,7 @@ public class PetriUtils {
 		this.adapter = adapter;
 		this.vmffd = vmffd;
 		this.invars = new ArrayList<Integer[]>(); // holds the minimal t-invariants, should user decide to have them calculated
+		this.realize = new ArrayList<String>();
 	}
 
 	/**
@@ -545,12 +547,14 @@ public class PetriUtils {
 			newUsed.add(petriNet.getDefaultNodeTable().getRow(trans.getSUID()).get("name", String.class));
 			if (newTransitions.isEmpty()) { // Recursion is done, leaf has been reached
 				realize.add(newUsed.toString());
+				JFrame f = new JFrame("Realizable Permutations");
+				JOptionPane.showMessageDialog(f, realize);
 			}
 			else { // Recursion Step, Fix this to search only for one.
+				/*if (!all && !realize.isEmpty()) { // This one just doesn't seem to work at all, don't get why though
+					return;
+				}*/
 				namingsense(newTransitions, newUsed, newTimes, newTokens, realize, all);
-				//if (!all && !realize.isEmpty()) {
-				//	return;
-				//}
 			}
 		}
 		return;

@@ -3,9 +3,6 @@ package org.petri;
 import java.util.ArrayList;
 import java.util.HashMap;
 import javax.swing.JComboBox;
-import javax.swing.JFrame;
-import javax.swing.JOptionPane;
-
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
@@ -90,7 +87,6 @@ public class CheckRealizeTask extends AbstractTask {
 		ArrayList<String> realize = new ArrayList<String>();
 		petriUtils.namingsense(transitions, new ArrayList<String>(), times, tokens, realize, all);
 		// Display realizable permutations ... kind of want to get this into petriPanel to get rid of TaskMonitor
-		JFrame f = new JFrame("Realizable Permutations");
-		JOptionPane.showMessageDialog(f, realize);
+		petriUtils.realize = realize;
 	}
 }
