@@ -15,19 +15,22 @@ public class CheckRealizeTaskFactory extends AbstractTaskFactory{
 	private final CyNetwork petriNet;
 	private final JComboBox<String> invarHolder;
 	private final PetriUtils petriUtils;
+	private final boolean all;
 	
 	/**
 	 * Constructor
 	 * @param petriNet Petri net currently being worked on
 	 * @param invarHolder Container for invariants
+	 * @param all 
 	 */
-	public CheckRealizeTaskFactory(final CyNetwork petriNet, JComboBox<String> invarHolder, PetriUtils petriUtils) {
+	public CheckRealizeTaskFactory(final CyNetwork petriNet, JComboBox<String> invarHolder, PetriUtils petriUtils, boolean all) {
 		this.petriNet = petriNet;
 		this.invarHolder = invarHolder;
 		this.petriUtils = petriUtils;
+		this.all = all;
 	}
 	
 	public TaskIterator createTaskIterator(){
-		return new TaskIterator(new CheckRealizeTask(petriNet, invarHolder, petriUtils));
+		return new TaskIterator(new CheckRealizeTask(petriNet, invarHolder, petriUtils, all));
 	}	
 }

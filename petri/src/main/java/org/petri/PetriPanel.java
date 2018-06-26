@@ -373,18 +373,21 @@ public class PetriPanel extends JPanel implements CytoPanelComponent {
 		JButton checkRealize = new JButton("Check Realizability");
 		checkRealize.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				checkRealizeTaskFactory = new CheckRealizeTaskFactory(petriNet, invarHolder, petriUtils);
+				JFrame f = new JFrame("Checking Realizability");
+				int all = JOptionPane.showConfirmDialog(f, "Compute all realizable permutations?");
+				JOptionPane.showMessageDialog(f, all);
+				if (all != JOptionPane.NO_OPTION && all != JOptionPane.YES_OPTION) { // 1, 0
+					return;
+				}
+				checkRealizeTaskFactory = new CheckRealizeTaskFactory(petriNet, invarHolder, petriUtils, (all == 0));
 				TaskIterator itr = checkRealizeTaskFactory.createTaskIterator();
-				adapter.getTaskManager().execute(itr);
 				SynchronousTaskManager<?> synTaskMan = adapter.getCyServiceRegistrar().getService(SynchronousTaskManager.class);
 				synTaskMan.execute(itr);
-				JFrame f = new JFrame("Realizable Permutations");
-				JOptionPane.showMessageDialog(f, petriUtils.realize);
-				JOptionPane.showMessageDialog(f, "Pre-Output");
 				String output = "";
 				for (String perm : petriUtils.realize) {
 					output += perm + "\n";	
 				}
+				// Now make output a little prettier by removing all '[' and ']'
 				JOptionPane.showMessageDialog(f, "Perms done");
 				JOptionPane.showMessageDialog(f, output);
 			}

@@ -8,7 +8,6 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
-import org.cytoscape.work.Tunable;
 
 /**
  * Task to check whether one/all??? invariant(s) is/are realizable
@@ -16,21 +15,22 @@ import org.cytoscape.work.Tunable;
  *
  */
 public class CheckRealizeTask extends AbstractTask {
-	@Tunable(description="Find all permutations instead of just one")
-	public boolean all;
 	private CyNetwork petriNet;
 	private JComboBox<String> invarHolder;
 	private PetriUtils petriUtils;
+	private boolean all;
 
 	/**
 	 * Constructor
 	 * @param petriNet Petri net currently being worked on
 	 * @param invarHolder Container for invariants
+	 * @param all 
 	 */
-	public CheckRealizeTask(CyNetwork petriNet, JComboBox<String> invarHolder, PetriUtils petriUtils) {
+	public CheckRealizeTask(CyNetwork petriNet, JComboBox<String> invarHolder, PetriUtils petriUtils, boolean all) {
 		this.petriNet = petriNet;
 		this.invarHolder = invarHolder;
 		this.petriUtils = petriUtils;
+		this.all = all;
 	}
 	
 	public void run(TaskMonitor taskMonitor) throws Exception {

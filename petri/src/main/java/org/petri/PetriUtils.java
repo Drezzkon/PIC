@@ -510,8 +510,15 @@ public class PetriUtils {
 
 	@SuppressWarnings("unchecked")
 	public void namingsense(ArrayList<CyNode> transitions, ArrayList<String> used,
-			HashMap<String, Integer> times, HashMap<String, Integer> tokens, ArrayList<String> realize, boolean all) {
+			HashMap<String, Integer> times, HashMap<String, Integer> tokens,
+			ArrayList<String> realize, boolean all) {
+		if (!all && !realize.isEmpty()) { // This one just doesn't seem to work at all, don't get why though
+			return;
+		}
 		for (CyNode trans : transitions) {
+			if (!all && !realize.isEmpty()) { // This one just doesn't seem to work at all, don't get why though
+				return;
+			}
 			// Check if transitions can fire
 			boolean canFire = true;
 			for (CyEdge e : petriNet.getAdjacentEdgeIterable(trans, CyEdge.Type.INCOMING)) {
@@ -546,14 +553,15 @@ public class PetriUtils {
 			ArrayList<String> newUsed = (ArrayList<String>) used.clone();
 			newUsed.add(petriNet.getDefaultNodeTable().getRow(trans.getSUID()).get("name", String.class));
 			if (newTransitions.isEmpty()) { // Recursion is done, leaf has been reached
+				if (!all && !realize.isEmpty()) { // This one just doesn't seem to work at all, don't get why though
+					return;
+				}
 				realize.add(newUsed.toString());
-				JFrame f = new JFrame("Realizable Permutations");
-				JOptionPane.showMessageDialog(f, realize);
 			}
 			else { // Recursion Step, Fix this to search only for one.
-				/*if (!all && !realize.isEmpty()) { // This one just doesn't seem to work at all, don't get why though
+				if (!all && !realize.isEmpty()) { // This one just doesn't seem to work at all, don't get why though
 					return;
-				}*/
+				}
 				namingsense(newTransitions, newUsed, newTimes, newTokens, realize, all);
 			}
 		}
