@@ -388,6 +388,7 @@ public class PetriPanel extends JPanel implements CytoPanelComponent {
 					output += perm + "\n";	
 				}
 				// Now make output a little prettier by removing all '[' and ']'
+				output.replaceAll("[", "");
 				JOptionPane.showMessageDialog(f, "Perms done");
 				JOptionPane.showMessageDialog(f, output);
 			}
