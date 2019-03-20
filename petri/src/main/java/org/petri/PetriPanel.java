@@ -8,6 +8,8 @@ import java.awt.Label;
 import java.awt.TextField;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
+import java.util.Arrays;
 
 import javax.swing.ButtonGroup;
 import javax.swing.Icon;
@@ -308,8 +310,8 @@ public class PetriPanel extends JPanel implements CytoPanelComponent {
 						}
 					}
 					if (trans == null) {
-						JFrame f = new JFrame("Error during colouring of invariants");
-						JOptionPane.showMessageDialog(f, "Couldn't find transition " + tName);
+						JFrame f5 = new JFrame("Error during colouring of invariants");
+						JOptionPane.showMessageDialog(f5, "Couldn't find transition " + tName);
 					}
 					Iterable<CyEdge>edges = petriNet.getAdjacentEdgeIterable(trans, CyEdge.Type.DIRECTED);
 					for (CyEdge edge : edges) {
@@ -324,7 +326,7 @@ public class PetriPanel extends JPanel implements CytoPanelComponent {
 				}
 			}
 		});
-		/*JButton invarBut = new JButton("Compute min. T-Invariants");	// Button for calculating invariants
+		JButton invarBut = new JButton("Compute min. T-Invariants");	// Button for calculating invariants
 		invarBut.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				if (petriNet == null) {
@@ -348,7 +350,7 @@ public class PetriPanel extends JPanel implements CytoPanelComponent {
 					String empty = "";
 					Integer current = 0;
 					for (int i=1; i<=invar.length; i++) {
-						if (invar[invar.length-i] == 1) {
+						if (invar[invar.length-i] != 0) {
 							String name = "";
 							for (CyNode n : petriNet.getNodeList()) {
 								if (petriNet.getDefaultNodeTable().getRow(n.getSUID()).get("internal id", String.class).equals("t"+current.toString())) {
@@ -356,7 +358,12 @@ public class PetriPanel extends JPanel implements CytoPanelComponent {
 									break;
 								}
 							}
-							empty += name + ", ";
+							if ((invar[invar.length-i]) > 1){
+								empty += Integer.toString(invar[invar.length-i]) + " " + name + ", ";
+							}
+							else{
+								empty += name + ", ";
+							}
 						}
 						current++;
 					}
@@ -369,7 +376,7 @@ public class PetriPanel extends JPanel implements CytoPanelComponent {
 				petriUtils.is_CTI();
 			}
 		});
-		top.add(invarBut);*/
+		top.add(invarBut);
 		JButton checkRealize = new JButton("Check Realizability");
 		checkRealize.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {

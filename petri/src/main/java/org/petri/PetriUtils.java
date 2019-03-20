@@ -341,7 +341,7 @@ public class PetriUtils {
 	 * @param cyPlaceArray CyNode[] containing all places
 	 * @return invariants contains all invariants as Integer[] elements of an ArrayList
 	 */
-/*	public ArrayList<Integer[]> invar(CyNode[] cyTransitionArray, CyNode[] cyPlaceArray) {
+	public ArrayList<Integer[]> invar(CyNode[] cyTransitionArray, CyNode[] cyPlaceArray) {
 		//Creating incidenceMatrix
 		Integer[][] incidenceMatrix = new Integer[cyTransitionArray.length][cyPlaceArray.length]; 
 		for (Integer m = 0; m < cyTransitionArray.length; m++) {
@@ -351,12 +351,12 @@ public class PetriUtils {
 				Iterable<CyEdge>outgoingEdges = petriNet.getAdjacentEdgeIterable(cyPlaceArray[n], CyEdge.Type.OUTGOING);
 				for (CyEdge incomingEdge : incomingEdges){
 					if (cyTransitionArray[m].getSUID().equals(incomingEdge.getSource().getSUID())){
-						incidenceMatrix[m][n] = 1;
+						incidenceMatrix[m][n] = petriNet.getDefaultEdgeTable().getRow(incomingEdge.getSUID()).get("weight", Integer.class);
 					}
 				}
 				for (CyEdge outgoingEdge : outgoingEdges){
 					if (cyTransitionArray[m].getSUID().equals(outgoingEdge.getTarget().getSUID())){
-						incidenceMatrix[m][n] = -1;
+						incidenceMatrix[m][n] = -1 * petriNet.getDefaultEdgeTable().getRow(outgoingEdge.getSUID()).get("weight", Integer.class);
 					}
 				}
 			}
@@ -380,9 +380,9 @@ public class PetriUtils {
 			ArrayList<Integer> posPositions = new ArrayList<Integer>();
 			ArrayList<Integer> negPositions = new ArrayList<Integer>();
 			for (Integer t = 0; t < incMatList.size(); t++){
-				if (incMatList.get(t)[p].equals(1)){
+				if (incMatList.get(t)[p] > 0){
 					posPositions.add(t);
-				} else if (incMatList.get(t)[p].equals(-1)){
+				} else if (incMatList.get(t)[p] < 0){
 					negPositions.add(t);
 				}
 			}
@@ -391,13 +391,29 @@ public class PetriUtils {
 			ArrayList<Integer[]> newIdentLines = new ArrayList<Integer[]>();
 			for (Integer pos = 0; pos<posPositions.size(); pos++){
 				for (Integer neg = 0; neg<negPositions.size(); neg++){
+					Integer a = incMatList.get(posPositions.get(pos))[p];
+					Integer b = -1 * incMatList.get(negPositions.get(neg))[p];
+					if (a != 0){
+						while (b != 0){
+							if (a > b){
+								a = a - b;
+							}
+							else{
+								b = b - a;
+							}
+						}
+					}
+					Integer ggT = a;
+					Integer kgV = incMatList.get(posPositions.get(pos))[p] * (-1 * incMatList.get(negPositions.get(neg))[p] / ggT);
+					Integer posDiv = kgV / incMatList.get(posPositions.get(pos))[p];
+					Integer negDiv = -1 * kgV / incMatList.get(negPositions.get(neg))[p];
 					Integer[] newLine = new Integer[cyPlaceArray.length];
 					Integer[] newIdentLine = new Integer[cyTransitionArray.length];
 					for (Integer place=0; place<cyPlaceArray.length; place++){
-						newLine[place] = incMatList.get(posPositions.get(pos))[place] + incMatList.get(negPositions.get(neg))[place];
+						newLine[place] = posDiv * incMatList.get(posPositions.get(pos))[place] + negDiv * incMatList.get(negPositions.get(neg))[place];
 					}
 					for (Integer transition=0; transition<cyTransitionArray.length; transition++){
-						newIdentLine[transition] = identList.get(posPositions.get(pos))[transition] + identList.get(negPositions.get(neg))[transition];
+						newIdentLine[transition] = posDiv * identList.get(posPositions.get(pos))[transition] + negDiv * identList.get(negPositions.get(neg))[transition];
 					}
 					newLines.add(newLine);
 					newIdentLines.add(newIdentLine);
@@ -429,9 +445,88 @@ public class PetriUtils {
 				invariants.add(identList.get(m));
 			}
 		}
-		return invariants;
-	}*/
+		ArrayList<Integer> values = new ArrayList<Integer>();
+		ArrayList<Integer[]> sortedcand = new ArrayList<Integer[]>();
+		for (Integer x = 0; x < invariants.size(); x++){
+			Integer tempcount = 0;
+			for (Integer y = 0; y < invariants.get(x).length; y++){
+				tempcount += invariants.get(x)[y];
+			}
+			values.add(tempcount);
+		}
+		Integer max = values.get(values.indexOf(Collections.max(values)));
+		for (Integer z = 0; z < values.size(); z++){
+			Integer minIndex = values.indexOf(Collections.min(values));
+			sortedcand.add(invariants.get(minIndex));
+			values.set(minIndex, max+1);
+		}
+		Integer currRank = 0;
+		ArrayList<Integer[]> invariantcont = new ArrayList<Integer[]>();
+		for (Integer l = 0; l < sortedcand.size(); l++){
+			invariantcont.add(sortedcand.get(l));
+			Integer newRank = rank(invariantcont.toArray(new Integer[invariantcont.size()][invariantcont.get(0).length]));
+			if (newRank > currRank){
+				currRank = newRank;
+			}
+			else{
+				invariantcont.remove(invariantcont.size() - 1);
+			}
+		}
+		return invariantcont;
+	}
 
+	public Integer rank(Integer[][] matrix){Double [][] doublemat = new Double[matrix.length][matrix[0].length];
+		for (Integer a = 0; a < matrix.length; a++){
+			for (Integer b = 0; b < matrix[0].length; b++){
+				doublemat[a][b] = Double.valueOf((matrix[a][b]));
+			}
+		}
+		Integer pivot_r = 0;
+		Integer pivot_c = 0;
+		Integer m = doublemat.length;
+		Integer n = doublemat[0].length;
+		while (pivot_r < m && pivot_c < n){
+			Integer largest = 0;
+			for ( Integer i = pivot_r; i < m; i++){
+				if (Math.abs(doublemat[i][pivot_c]) > Math.abs(doublemat[largest][pivot_c])){
+					largest = i;
+				}
+			}
+			if (doublemat[largest][pivot_c] != 0){
+				//swap rows
+				for (int x = 0; x < n; x++){
+					Double temp_val = doublemat[pivot_r][x];
+					doublemat[pivot_r][x] = doublemat[largest][x];
+					doublemat[largest][x] = temp_val;
+				}
+				for (int y = pivot_r + 1; y < m; y++){
+					Double div = doublemat[y][pivot_c] / doublemat[pivot_r][pivot_c];
+					doublemat[y][pivot_c] = 0.0;
+					for (int z = pivot_c + 1; z < n; z++){
+						doublemat[y][z] = doublemat[y][z] - (doublemat[pivot_r][z] * div);
+					}
+				}
+				pivot_r++;
+				pivot_c++;
+			}
+			else {
+				pivot_c++;
+			}
+		}
+		Integer rank = 0;
+		for (Integer r = 0; r < doublemat.length; r++){
+			boolean status = false;
+			for (Integer c = 0; c < doublemat[0].length; c++){
+				if (doublemat[r][c] != 0){
+					status = true;
+				}
+			}
+			if (status == true){
+				rank++;
+			}
+		}
+		return rank;
+	}
 	/**
 	 * Checks whether network is CTI or not
 	 */
