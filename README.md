@@ -11,7 +11,7 @@ simulate or export them.
 Features include:
 
  - Loading Petri nets from input files
-        -> supported formats: SBML, PNT, APNN, RL, Metatool
+     - supported formats: SBML, PNT, APNN, RL, Metatool
  - Manual creation and modification of Petri nets
  - Export of created and/or modified Petri nets to SBML Level 3 Version 1 format
  - Verification of formal correctness
