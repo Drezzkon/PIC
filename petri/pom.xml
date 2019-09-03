@@ -5,18 +5,20 @@
 	<properties>
 		<bundle.symbolicName>org.petri</bundle.symbolicName>
 		<bundle.namespace>org.petri</bundle.namespace>
-		<cytoscape.api.version>3.6.0</cytoscape.api.version>
-
+		<cytoscape.api.version>3.7.1</cytoscape.api.version>
+		<cytoscape.app.name>PIC</cytoscape.app.name>
+		<cytoscape.api.compatibility>3.7.1</cytoscape.api.compatibility>
+		<cytoscape.app.version>1.0</cytoscape.app.version>
 		<maven-bundle-plugin.version>2.3.4</maven-bundle-plugin.version>
 		<osgi.api.version>4.2.0</osgi.api.version>
 	</properties>
 	
 	<groupId>org</groupId>
-	<artifactId>petri</artifactId>
+	<artifactId>PIC</artifactId>
 	<packaging>bundle</packaging>
 	<version>1.0</version>
 	
-	<name>Petri Net for Cytoscape</name>
+	<name>Petri Net Implementation for Cytoscape</name>
 
 	<repositories>
 		<repository>
